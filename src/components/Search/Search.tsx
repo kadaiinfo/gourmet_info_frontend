@@ -13,6 +13,8 @@ interface SearchProps {
   isLocating?: boolean
   cafes?: Cafe[]
   onSuggestionSelect?: (cafe: Cafe) => void
+  onOpenNowToggle?: () => void
+  isOpenNowActive?: boolean
 }
 
 export default function Search({
@@ -21,7 +23,9 @@ export default function Search({
   onLocationClick,
   isLocating,
   cafes = [],
-  onSuggestionSelect
+  onSuggestionSelect,
+  onOpenNowToggle,
+  isOpenNowActive = false
 }: SearchProps) {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<Cafe[]>([])
@@ -159,6 +163,17 @@ export default function Search({
               title="現在地を表示"
             >
               <img src="/location.png" alt="現在地" className="location-icon" />
+            </button>
+          )}
+          {onOpenNowToggle && (
+            <button
+              type="button"
+              onClick={onOpenNowToggle}
+              className={`open-now-button-search${isOpenNowActive ? ' active' : ''}`}
+              aria-label="今開いているお店を絞り込む"
+              title="今開いているお店を絞り込む"
+            >
+              今開いてる！
             </button>
           )}
         </div>

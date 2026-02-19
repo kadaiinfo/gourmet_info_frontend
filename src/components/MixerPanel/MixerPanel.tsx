@@ -1,18 +1,10 @@
 import "./MixerPanel.css"
-import articlesData from "../../data/articles-ogp.json"
 
 interface MixerPanelProps {
   onClose: () => void
   onShowCafeList: () => void
   onAreaSelect: (lng: number, lat: number) => void
   onShowNearbyCafes: () => void
-}
-
-interface Article {
-  url: string
-  title: string
-  image: string
-  fallbackImage?: string
 }
 
 export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onShowNearbyCafes }: MixerPanelProps) {
@@ -25,17 +17,9 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
     { id: "downtown", name: "谷山", lng: 130.5229738, lat: 31.5298778 },
   ]
 
-  const articles: Article[] = articlesData
-
   const handleAreaClick = (area: typeof areas[0]) => {
     onAreaSelect(area.lng, area.lat)
     onClose() // エリア選択後にパネルを閉じる
-  }
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>, fallbackImage?: string) => {
-    if (fallbackImage && e.currentTarget.src !== fallbackImage) {
-      e.currentTarget.src = fallbackImage
-    }
   }
 
   return (
@@ -96,34 +80,6 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
           </div>
         </div>
 
-        {/* おすすめ記事セクション */}
-        <div className="mixer-panel__section">
-          <h3 className="mixer-panel__section-title">おすすめ記事</h3>
-          <div className="mixer-panel__articles-grid">
-            {articles.map((article, index) => (
-              <a
-                key={index}
-                href={article.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mixer-panel__article-card"
-              >
-                <div className="mixer-panel__article-image">
-                  <img
-                    src={article.image}
-                    alt={article.title}
-                    onError={(e) => handleImageError(e, article.fallbackImage)}
-                  />
-                </div>
-                <div className="mixer-panel__article-body">
-                  <div className="mixer-panel__article-title">
-                    {article.title}
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* フッター */}

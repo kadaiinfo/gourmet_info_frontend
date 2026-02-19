@@ -40,6 +40,7 @@ export type Cafe = {
     media_url: string | null  // サムネイル用
     permalink: string | null // 埋め込み用リンク（高速化のため追加）
     timestamp?: string // ソート用
+    opening_hours?: string | null // 営業時間フィルター用
 }
 
 // 詳細データ構造（Informationパネル用の型を定義）
@@ -121,7 +122,8 @@ const generateCafeData = (apiData: CafeDataFromAPI[]): Cafe[] => {
             address: cafe.address ?? null,
             media_url: cafe.media_url ?? null,
             permalink: cafe.permalink ?? null,
-            timestamp: cafe.timestamp
+            timestamp: cafe.timestamp,
+            opening_hours: cafe.opening_hours ?? null
         }))
 }
 

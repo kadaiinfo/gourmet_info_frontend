@@ -17,6 +17,10 @@
     right: 10px;
     position: fixed;
   }
+
+  .search-form {
+    flex-wrap: wrap;
+  }
 }
 
 .search-logo-container {
@@ -184,6 +188,37 @@
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+/* 「今空いてる！」フィルターボタン */
+.open-now-button-search {
+  height: 50px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 20px;
+  background-color: #ccc;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Noto Sans JP", sans-serif;
+  color: white;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  outline: none;
+}
+
+
+.open-now-button-search:focus,
+.open-now-button-search:focus-visible {
+  outline: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.open-now-button-search.active {
+  background-color: #573B3A;
+  color: white;
 }
 
 

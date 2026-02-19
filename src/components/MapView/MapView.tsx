@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import "./MapView.css"
@@ -16,6 +16,7 @@ import { handleCafeSelection } from "./utils/mapPosition"
 import { updateMarkersWithZoom, addMarkerForCafe } from "./utils/markerManager"
 import { handleSearch } from "./utils/searchHandler"
 import { getCurrentLocation, updateUserLocationMarker, moveToUserLocation } from "./utils/geolocation"
+import { isOpenNow } from "../../utils/openingHoursParser"
 
 // 地図を描画するコンポーネント
 // この記事を参考に実装した 
@@ -45,6 +46,13 @@ export default function MapView() {
     const [isLocating, setIsLocating] = useState(false) // 位置情報取得中の状態
     const userLocationMarkerRef = useRef<maplibregl.Marker | null>(null) // 現在地マーカーの参照
     const [expandTrigger, setExpandTrigger] = useState(0) // 詳細パネル展開のトリガー
+    const [filterOpenNow, setFilterOpenNow] = useState(false) // 「今空いてる！」フィルター状態
+
+    // filterOpenNow が true のときは営業中の店舗のみに絞り込む
+    const filteredCafes = useMemo(() => {
+        if (!filterOpenNow) return allCafes
+        return allCafes.filter(cafe => isOpenNow(cafe.opening_hours) === true)
+    }, [allCafes, filterOpenNow])
 
     // カフェデータを読み込む（コンポーネント初回マウント時のみ）
     useEffect(() => {
@@ -69,12 +77,12 @@ export default function MapView() {
             currentZoom,
             mapRef.current,
             cafeDataLoaded,
-            allCafes,
+            filteredCafes,
             ZOOM_THRESHOLD,
             markersRef,
             setSelected
         )
-    }, [currentZoom, cafeDataLoaded, allCafes])
+    }, [currentZoom, cafeDataLoaded, filteredCafes])
 
     // -------- 設定（MixerPanel）の処理------------
     // 設定（MixerPanel）を開く - 検索バーの設定ボタンクリック時
@@ -274,9 +282,19 @@ export default function MapView() {
                 isLocating={isLocating}
                 cafes={allCafes}
                 onSuggestionSelect={handleCafeSelect}
+                onOpenNowToggle={() => setFilterOpenNow(prev => !prev)}
+                isOpenNowActive={filterOpenNow}
             />
 
             <div ref={mapContainerRef} className="map-container" />
+
+            {/* 「今開いてる！」フィルター中の注意書き */}
+            {filterOpenNow && (
+                <div className={`open-now-notice${selected ? ' with-info' : ''}`}>
+                    営業時間の情報は取材時の情報に基づきます。<br />正確な情報は、店舗に直接お問い合わせください。
+                </div>
+            )}
+
 
             {/* カフェデータの読み込み中の表示 */}
             {!cafeDataLoaded && (
