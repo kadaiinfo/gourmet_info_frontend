@@ -5,6 +5,7 @@ import mixerIcon from "./mixer.svg"
 import { type Cafe } from "../../lib/dataClient"
 import { normalizeText } from "../../utils/textNormalization"
 import { hiraganaToRomaji } from "../../utils/romajiUtils"
+import { type GenreId } from "../../utils/genreFilter"
 
 interface SearchProps {
   onSearch: (query: string) => void
@@ -15,6 +16,9 @@ interface SearchProps {
   onSuggestionSelect?: (cafe: Cafe) => void
   onOpenNowToggle?: () => void
   isOpenNowActive?: boolean
+  genres?: readonly { id: GenreId; label: string }[]
+  selectedGenre?: GenreId | null
+  onGenreSelect?: (genreId: GenreId) => void
 }
 
 export default function Search({
@@ -25,7 +29,10 @@ export default function Search({
   cafes = [],
   onSuggestionSelect,
   onOpenNowToggle,
-  isOpenNowActive = false
+  isOpenNowActive = false,
+  genres,
+  selectedGenre,
+  onGenreSelect
 }: SearchProps) {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<Cafe[]>([])
@@ -165,19 +172,34 @@ export default function Search({
               <img src="/location.png" alt="現在地" className="location-icon" />
             </button>
           )}
+        </div>
+      </form>
+
+      {/* フィルター行（今開いてる！ + ジャンルタグ） */}
+      {(onOpenNowToggle || (genres && genres.length > 0)) && (
+        <div className="filter-tags">
           {onOpenNowToggle && (
             <button
               type="button"
               onClick={onOpenNowToggle}
-              className={`open-now-button-search${isOpenNowActive ? ' active' : ''}`}
+              className={`genre-tag${isOpenNowActive ? ' active' : ''}`}
               aria-label="今開いているお店を絞り込む"
-              title="今開いているお店を絞り込む"
             >
               今開いてる！
             </button>
           )}
+          {genres && genres.map(genre => (
+            <button
+              key={genre.id}
+              type="button"
+              className={`genre-tag${selectedGenre === genre.id ? ' active' : ''}`}
+              onClick={() => onGenreSelect && onGenreSelect(genre.id)}
+            >
+              {genre.label}
+            </button>
+          ))}
         </div>
-      </form>
+      )}
 
       {/* サジェストリスト */}
       {showSuggestions && suggestions.length > 0 && (

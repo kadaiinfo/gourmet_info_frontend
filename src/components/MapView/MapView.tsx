@@ -17,6 +17,7 @@ import { updateMarkersWithZoom, addMarkerForCafe } from "./utils/markerManager"
 import { handleSearch } from "./utils/searchHandler"
 import { getCurrentLocation, updateUserLocationMarker, moveToUserLocation } from "./utils/geolocation"
 import { isOpenNow } from "../../utils/openingHoursParser"
+import { GENRES, type GenreId, matchesGenre } from "../../utils/genreFilter"
 
 // 地図を描画するコンポーネント
 // この記事を参考に実装した 
@@ -47,12 +48,19 @@ export default function MapView() {
     const userLocationMarkerRef = useRef<maplibregl.Marker | null>(null) // 現在地マーカーの参照
     const [expandTrigger, setExpandTrigger] = useState(0) // 詳細パネル展開のトリガー
     const [filterOpenNow, setFilterOpenNow] = useState(false) // 「今空いてる！」フィルター状態
+    const [selectedGenre, setSelectedGenre] = useState<GenreId | null>(null) // ジャンルフィルター状態
 
-    // filterOpenNow が true のときは営業中の店舗のみに絞り込む
+    // フィルター（今開いてる + ジャンル）を適用した店舗リスト
     const filteredCafes = useMemo(() => {
-        if (!filterOpenNow) return allCafes
-        return allCafes.filter(cafe => isOpenNow(cafe.opening_hours) === true)
-    }, [allCafes, filterOpenNow])
+        let result = allCafes
+        if (filterOpenNow) {
+            result = result.filter(cafe => isOpenNow(cafe.opening_hours) === true)
+        }
+        if (selectedGenre) {
+            result = result.filter(cafe => matchesGenre(cafe.categories, selectedGenre))
+        }
+        return result
+    }, [allCafes, filterOpenNow, selectedGenre])
 
     // カフェデータを読み込む（コンポーネント初回マウント時のみ）
     useEffect(() => {
@@ -267,6 +275,13 @@ export default function MapView() {
         }
     }, [filterOpenNow])
 
+    // ジャンルフィルターが変わった時、選択中の店舗が該当ジャンル外なら閉じる
+    useEffect(() => {
+        if (selectedGenre && selected && !matchesGenre(selected.categories, selectedGenre)) {
+            setSelected(null)
+        }
+    }, [selectedGenre])
+
     // ポップアップクリック時の処理
     const handlePopupClick = useCallback(() => {
         setExpandTrigger(prev => prev + 1)
@@ -297,6 +312,9 @@ export default function MapView() {
                 onSuggestionSelect={handleCafeSelect}
                 onOpenNowToggle={() => setFilterOpenNow(prev => !prev)}
                 isOpenNowActive={filterOpenNow}
+                genres={GENRES}
+                selectedGenre={selectedGenre}
+                onGenreSelect={(genreId) => setSelectedGenre(prev => prev === genreId ? null : genreId)}
             />
 
             <div ref={mapContainerRef} className="map-container" />
