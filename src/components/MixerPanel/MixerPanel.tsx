@@ -1,13 +1,17 @@
 import "./MixerPanel.css"
+import { type GenreId } from "../../utils/genreFilter"
 
 interface MixerPanelProps {
   onClose: () => void
   onShowCafeList: () => void
   onAreaSelect: (lng: number, lat: number) => void
   onShowNearbyCafes: () => void
+  genres?: readonly { id: GenreId; label: string }[]
+  selectedGenre?: GenreId | null
+  onGenreSelect?: (genreId: GenreId) => void
 }
 
-export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onShowNearbyCafes }: MixerPanelProps) {
+export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onShowNearbyCafes, genres, selectedGenre, onGenreSelect }: MixerPanelProps) {
 
   const areas = [
     { id: "uptown", name: "騎射場", lng: 130.5520733, lat: 31.5692252 },
@@ -62,16 +66,34 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
       </div>
 
       <div className="mixer-panel__body">
+        {/* ジャンルフィルターセクション */}
+        {genres && genres.length > 0 && (
+          <div className="mixer-panel__section">
+            <h3 className="mixer-panel__section-title">ジャンルで絞り込む</h3>
+            <div className="mixer-panel__genre-list">
+              {genres.map(genre => (
+                <button
+                  key={genre.id}
+                  className={`mixer-panel__genre-button${selectedGenre === genre.id ? ' active' : ''}`}
+                  onClick={() => onGenreSelect && onGenreSelect(genre.id)}
+                >
+                  {genre.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* エリア選択セクション */}
         <div className="mixer-panel__section">
           <h3 className="mixer-panel__section-title">エリアに移動</h3>
 
           {/* エリアボタングリッド */}
-          <div className="mixer-panel__area-list">
+          <div className="mixer-panel__genre-list">
             {areas.map((area) => (
               <button
                 key={area.id}
-                className="mixer-panel__area-button"
+                className="mixer-panel__genre-button"
                 onClick={() => handleAreaClick(area)}
               >
                 {area.name}

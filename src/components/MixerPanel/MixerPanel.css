@@ -319,10 +319,45 @@
   }
 }
 
+/* ジャンルフィルター */
+.mixer-panel__genre-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mixer-panel__genre-button {
+  height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 18px;
+  background-color: white;
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Noto Sans JP", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: none;
+  outline: none;
+}
+
+.mixer-panel__genre-button:focus,
+.mixer-panel__genre-button:focus-visible {
+  outline: none;
+}
+
+.mixer-panel__genre-button.active {
+  background-color: #573B3A;
+  color: white;
+  border-color: #573B3A;
+}
+
 /* フッター */
 .mixer-panel__footer {
   padding: 40px 20px;
-  background: #70513C;
+  background: #573B3A;
   border-top: 1px solid #e0e0e0;
   text-align: center;
   flex-shrink: 0;

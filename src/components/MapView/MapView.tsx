@@ -354,6 +354,9 @@ export default function MapView() {
                     onShowCafeList={handleShowCafeList}
                     onAreaSelect={handleAreaSelect}
                     onShowNearbyCafes={handleShowNearbyCafeList}
+                    genres={GENRES}
+                    selectedGenre={selectedGenre}
+                    onGenreSelect={(genreId) => setSelectedGenre(prev => prev === genreId ? null : genreId)}
                 />
             )}
 
