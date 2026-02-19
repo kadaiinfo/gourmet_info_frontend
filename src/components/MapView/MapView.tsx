@@ -260,6 +260,13 @@ export default function MapView() {
     }, [currentZoom, mapCenter, updateMarkers, cafeDataLoaded, mapLoaded]) //どれか更新が入ると処理が走る
 
 
+    // 「今開いてる！」フィルターがオンになった時、選択中の店舗が営業時間外なら閉じる
+    useEffect(() => {
+        if (filterOpenNow && selected && isOpenNow(selected.opening_hours) !== true) {
+            setSelected(null)
+        }
+    }, [filterOpenNow])
+
     // ポップアップクリック時の処理
     const handlePopupClick = useCallback(() => {
         setExpandTrigger(prev => prev + 1)
