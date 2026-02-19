@@ -1,3 +1,26 @@
+.mixer-panel__genre-button:hover {
+  border-color: #ccc;
+  background-color: #f8f9fa;
+}
+
+.mixer-panel__genre-button.active:hover {
+  border-color: #573B3A;
+  background-color: #573B3A;
+}
+
+.mixer-panel__option-button:hover {
+  border-color: #ddd;
+}
+
+.mixer-panel__close:hover {
+  border-color: transparent;
+}
+
+.mixer-panel button:focus,
+.mixer-panel button:focus-visible {
+  outline: none !important;
+}
+
 .mixer-panel {
   position: absolute;
   top: 80px;
@@ -76,6 +99,11 @@
   }
 }
 
+.mixer-panel__close:focus,
+.mixer-panel__close:focus-visible {
+  outline: none;
+}
+
 .mixer-panel__close:hover {
   color: #333;
 }
@@ -132,15 +160,6 @@
   text-align: center;
 }
 
-.mixer-panel__area-button:hover {
-  border-color: #007bff;
-  background-color: #f8f9fa;
-}
-
-.mixer-panel__area-button:active {
-  background-color: #e9ecef;
-  border-color: #0056b3;
-}
 
 /* 記事グリッド */
 .mixer-panel__articles-grid {
@@ -232,8 +251,12 @@
   text-align: left;
 }
 
+.mixer-panel__option-button:focus,
+.mixer-panel__option-button:focus-visible {
+  outline: none;
+}
+
 .mixer-panel__option-button:hover {
-  border-color: #007bff;
   background-color: #f8f9fa;
 }
 
