@@ -309,12 +309,16 @@ export default function Information({ cafe, onClose, expandTrigger = 0 }: Inform
                                 </div>
                                 <div className="info__detail-row">
                                     <dt>営業時間</dt>
-                                    <dd>{detailedCafe?.opening_hours ?? "店舗に直接お問い合わせください"}</dd>
+                                    <dd>
+                                        {detailedCafe?.opening_hours
+                                            ? detailedCafe.opening_hours.split('\n').map((line, i) => (
+                                                <div key={i}>{line}</div>
+                                            ))
+                                            : "店舗に直接お問い合わせください"
+                                        }
+                                    </dd>
                                 </div>
-                                <div className="info__detail-row">
-                                    <dt>定休日</dt>
-                                    <dd>{detailedCafe?.regular_holiday ?? "店舗に直接お問い合わせください"}</dd>
-                                </div>
+
                             </dl>
                             <p className="info__note">
                                 ※上記は取材時の情報に基づきます。正確な情報は店舗に直接お問い合わせください。

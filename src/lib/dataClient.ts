@@ -60,7 +60,6 @@ export type DetailedCafe = {
     comments_count?: number
     timestamp?: string
     opening_hours?: string | null
-    regular_holiday?: string | null
     place_id?: string | null
     formatted_address?: string | null
     phone_number?: string | null
