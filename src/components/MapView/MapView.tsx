@@ -244,7 +244,10 @@ export default function MapView() {
         })
 
         // ウィンドウリサイズ時に MapLibre の内部サイズを更新
+        // ただし input にフォーカス中（キーボード表示中）はスキップして地図が動かないようにする
         const resizeObserver = new ResizeObserver(() => {
+            const activeEl = document.activeElement
+            if (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement) return
             map.resize()
         })
         if (mapContainerRef.current) {
