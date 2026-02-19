@@ -142,9 +142,15 @@ export default function MapView() {
     // ---------検索(Search)の処理---------------
     // 検索実行 - Search コンポーネントからの検索クエリ処理
     const handleSearchAction = async (query: string) => {
+        const searchFn = filterOpenNow
+            ? async (q: string) => {
+                const results = await searchCafes(q)
+                return results.filter(cafe => isOpenNow(cafe.opening_hours) === true)
+              }
+            : searchCafes
         await handleSearch(
             query,
-            searchCafes,
+            searchFn,
             mapRef.current,
             mapLoaded,
             setSelected,
@@ -280,7 +286,7 @@ export default function MapView() {
                 onSettingsClick={handleSettingsClick}
                 onLocationClick={handleLocationClick}
                 isLocating={isLocating}
-                cafes={allCafes}
+                cafes={filteredCafes}
                 onSuggestionSelect={handleCafeSelect}
                 onOpenNowToggle={() => setFilterOpenNow(prev => !prev)}
                 isOpenNowActive={filterOpenNow}
@@ -331,6 +337,7 @@ export default function MapView() {
                 <CafeList
                     onCafeSelect={handleCafeSelect}
                     onClose={handleCloseCafeList}
+                    cafes={filterOpenNow ? filteredCafes : undefined}
                 />
             )}
 
@@ -339,6 +346,7 @@ export default function MapView() {
                 <NearbyCafeList
                     onCafeSelect={handleCafeSelect}
                     onClose={handleCloseNearbyCafeList}
+                    cafes={filterOpenNow ? filteredCafes : undefined}
                 />
             )}
 

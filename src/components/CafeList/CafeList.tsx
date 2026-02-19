@@ -7,13 +7,18 @@ import { hiraganaToRomaji } from "../../utils/romajiUtils"
 interface CafeListProps {
   onCafeSelect: (cafe: Cafe) => void
   onClose: () => void
+  cafes?: Cafe[]
 }
 
-export default function CafeList({ onCafeSelect, onClose }: CafeListProps) {
+export default function CafeList({ onCafeSelect, onClose, cafes: cafesProp }: CafeListProps) {
   const [allCafes, setAllCafes] = useState<Cafe[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
+    if (cafesProp) {
+      setAllCafes(cafesProp)
+      return
+    }
     const loadCafes = async () => {
       try {
         const cafes = await getCafeData()
@@ -23,7 +28,7 @@ export default function CafeList({ onCafeSelect, onClose }: CafeListProps) {
       }
     }
     loadCafes()
-  }, [])
+  }, [cafesProp])
 
   // 検索フィルタリング
   const filteredCafes = allCafes.filter((cafe: Cafe) => {

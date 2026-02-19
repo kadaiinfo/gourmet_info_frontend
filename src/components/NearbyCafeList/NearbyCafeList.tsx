@@ -12,6 +12,7 @@ interface UserLocation {
 interface NearbyCafeListProps {
   onCafeSelect: (cafe: Cafe) => void
   onClose: () => void
+  cafes?: Cafe[]
 }
 
 // 距離計算（メートル単位）
@@ -27,7 +28,7 @@ const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c
 }
 
-export default function NearbyCafeList({ onCafeSelect, onClose }: NearbyCafeListProps) {
+export default function NearbyCafeList({ onCafeSelect, onClose, cafes: cafesProp }: NearbyCafeListProps) {
   const [nearbyCafes, setNearbyCafes] = useState<Cafe[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,8 +44,8 @@ export default function NearbyCafeList({ onCafeSelect, onClose }: NearbyCafeList
         const location = await getCurrentLocation()
         setUserLocation(location)
 
-        // 全カフェデータを取得
-        const allCafes = await getCafeData()
+        // カフェデータを取得（props があればそちらを優先）
+        const allCafes = cafesProp ?? await getCafeData()
 
         // 500m以内のカフェをフィルタリング
         const nearby = allCafes.filter(cafe => {
@@ -74,7 +75,7 @@ export default function NearbyCafeList({ onCafeSelect, onClose }: NearbyCafeList
     }
 
     loadNearbyCafes()
-  }, [])
+  }, [cafesProp])
 
   const handleCafeClick = (cafe: Cafe) => {
     onCafeSelect(cafe)
