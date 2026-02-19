@@ -23,7 +23,26 @@ export const handleSearch = async (
     const isMobile = mapWidth <= 768
     
     const position = calculateMapPosition(firstCafe, map, isMobile)
-    map.flyTo(position)
+
+    // スマホでキーボードが開いている場合は閉じてからビューポートが安定した後に flyTo する
+    const activeEl = document.activeElement as HTMLElement | null
+    if (activeEl && (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement)) {
+      activeEl.blur()
+      // visualViewport が縮んでいる（キーボード表示中）場合は resize イベントを待つ
+      const vv = window.visualViewport
+      if (vv && vv.height < window.innerHeight - 50) {
+        const onResize = () => {
+          vv.removeEventListener('resize', onResize)
+          map.resize()
+          map.flyTo(position)
+        }
+        vv.addEventListener('resize', onResize)
+      } else {
+        map.flyTo(position)
+      }
+    } else {
+      map.flyTo(position)
+    }
     
     // 移動完了後にマーカーを更新
     setTimeout(() => updateMarkers(), 500)
