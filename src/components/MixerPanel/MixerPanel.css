@@ -4,8 +4,8 @@
 }
 
 .mixer-panel__genre-button.active:hover {
-  border-color: #573B3A;
-  background-color: #573B3A;
+  border-color: #70523E;
+  background-color: #70523E;
 }
 
 .mixer-panel__option-button:hover {
@@ -372,15 +372,15 @@
 }
 
 .mixer-panel__genre-button.active {
-  background-color: #573B3A;
+  background-color: #70523E;
   color: white;
-  border-color: #573B3A;
+  border-color: #70523E;
 }
 
 /* フッター */
 .mixer-panel__footer {
   padding: 40px 20px;
-  background: #573B3A;
+  background: #70523E;
   border-top: 1px solid #e0e0e0;
   text-align: center;
   flex-shrink: 0;

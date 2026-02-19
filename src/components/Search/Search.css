@@ -125,7 +125,7 @@
 }
 
 .search-input::placeholder {
-  color: #573B3A;
+  color: #70523E;
   opacity: 0.7;
 }
 
@@ -356,6 +356,6 @@
 }
 
 .genre-tag.active {
-  background-color: #573B3A;
+  background-color: #70523E;
   color: white;
 }

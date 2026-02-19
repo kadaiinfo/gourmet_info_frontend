@@ -80,20 +80,20 @@
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 4px 0;
-  color: #573B3A;
+  color: #70523E;
   font-family: "Noto Sans JP", sans-serif;
 }
 
 .info__preview-address {
   font-size: 14px;
-  color: #573B3A;
+  color: #70523E;
   margin: 0;
   font-family: "Noto Sans JP", sans-serif;
 }
 
 .info__preview-arrow {
   font-size: 18px;
-  color: #573B3A;
+  color: #70523E;
   margin-left: 12px;
   transition: transform 0.2s ease;
 }
@@ -269,6 +269,11 @@
     height: 36px;
     position: static;
   }
+}
+
+.info__close:focus,
+.info__close:focus-visible {
+  outline: none;
 }
 
 .info__close:hover {

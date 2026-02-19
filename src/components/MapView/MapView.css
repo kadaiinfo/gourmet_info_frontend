@@ -61,7 +61,7 @@ body {
   /* 文字サイズ：14px */
   font-weight: 600 !important;
   /* 文字太さ：やや太め */
-  color: #573B3A !important;
+  color: #70523E !important;
   /* 文字色：茶色 */
   z-index: 9999 !important;
   /* 重ね順：最前面 */
@@ -145,7 +145,7 @@ body {
 
 /* クラスターマーカー（茶色で統一） */
 .cluster-marker {
-  background-color: #573B3A !important;
+  background-color: #70523E !important;
 }
 
 /* ========================================
