@@ -326,27 +326,17 @@ export default function MapView() {
 
             <div ref={mapContainerRef} className="map-container" />
 
+            {/* カフェデータ読み込み中のスピナー */}
+            {!cafeDataLoaded && (
+                <div className="map-loading-overlay">
+                    <div className="map-loading-spinner" />
+                </div>
+            )}
+
             {/* 「今開いてる！」フィルター中の注意書き */}
             {filterOpenNow && (
                 <div className={`open-now-notice${selected ? ' with-info' : ''}`}>
                     営業時間の情報は取材時の情報に基づきます。<br />正確な情報は、店舗に直接お問い合わせください。
-                </div>
-            )}
-
-
-            {/* カフェデータの読み込み中の表示 */}
-            {!cafeDataLoaded && (
-                <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    padding: '20px',
-                    borderRadius: '8px',
-                    zIndex: 2000
-                }}>
-                    カフェデータを読み込み中...
                 </div>
             )}
 
