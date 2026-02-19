@@ -18,6 +18,16 @@ type CafeDataFromAPI = {
     like_count?: number
     comments_count?: number
     timestamp?: string
+    opening_hours?: string | null
+    place_id?: string | null
+    formatted_address?: string | null
+    phone_number?: string | null
+    website?: string | null
+    open_now?: boolean | null
+    rating?: number | null
+    user_ratings_total?: number | null
+    categories?: string[] | null
+    google_maps_uri?: string | null
 }
 
 // 軽量データ構造（地図表示用に最小限のフィールドのみの型を定義）
@@ -51,6 +61,15 @@ export type DetailedCafe = {
     timestamp?: string
     opening_hours?: string | null
     regular_holiday?: string | null
+    place_id?: string | null
+    formatted_address?: string | null
+    phone_number?: string | null
+    website?: string | null
+    open_now?: boolean | null
+    rating?: number | null
+    user_ratings_total?: number | null
+    categories?: string[] | null
+    google_maps_uri?: string | null
 }
 
 // APIから取得したデータのキャッシュ

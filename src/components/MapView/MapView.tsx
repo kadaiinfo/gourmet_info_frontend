@@ -13,7 +13,7 @@ import NearbyCafeList from "../NearbyCafeList/NearbyCafeList.tsx"
 import { saveMapState, loadMapState } from "./utils/mapState"
 import { showPopup, hidePopup } from "./utils/popupManager"
 import { handleCafeSelection } from "./utils/mapPosition"
-import { updateMarkersWithZoom } from "./utils/markerManager"
+import { updateMarkersWithZoom, addMarkerForCafe } from "./utils/markerManager"
 import { handleSearch } from "./utils/searchHandler"
 import { getCurrentLocation, updateUserLocationMarker, moveToUserLocation } from "./utils/geolocation"
 
@@ -111,6 +111,10 @@ export default function MapView() {
 
     // カフェ一覧からカフェを選択 - CafeList のアイテムクリック時
     const handleCafeSelect = (cafe: Cafe) => {
+        // flyTo 開始前にマーカーを強制追加（移動中もマーカーが表示されるよう）
+        if (mapRef.current) {
+            addMarkerForCafe(cafe, mapRef.current, markersRef.current, setSelected)
+        }
         handleCafeSelection(cafe, mapRef.current, setSelected)  // 地図移動＋選択状態更新（デフォルトズーム固定）
     }
 
