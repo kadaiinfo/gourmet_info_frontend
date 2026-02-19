@@ -282,6 +282,13 @@ export default function MapView() {
         }
     }, [selectedGenre])
 
+    // ズームアウトしてクラスターマーカーが表示される時は、ポップアップと詳細バーを閉じる
+    useEffect(() => {
+        if (currentZoom < ZOOM_THRESHOLD && selected) {
+            setSelected(null)
+        }
+    }, [currentZoom])
+
     // ポップアップクリック時の処理
     const handlePopupClick = useCallback(() => {
         setExpandTrigger(prev => prev + 1)
