@@ -243,8 +243,17 @@ export default function MapView() {
             setSelected(null)
         })
 
+        // ウィンドウリサイズ時に MapLibre の内部サイズを更新
+        const resizeObserver = new ResizeObserver(() => {
+            map.resize()
+        })
+        if (mapContainerRef.current) {
+            resizeObserver.observe(mapContainerRef.current)
+        }
+
         // クリーンアップ関数：useEffectが終了するときmapをremoveする
         return () => {
+            resizeObserver.disconnect()
             map.off('moveend', handleMoveEnd)
             map.off('zoomend', handleZoomEnd)
             map.remove()

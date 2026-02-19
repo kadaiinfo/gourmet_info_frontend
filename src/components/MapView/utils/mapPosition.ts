@@ -24,11 +24,13 @@ export const calculateMapPosition = (
     const targetX = mapWidth * 0.25
     const centerX = mapWidth * 0.5
     const offsetX = centerX - targetX
-    
-    const bounds = map.getBounds()
-    const lngRange = bounds.getEast() - bounds.getWest()
+
+    // flyTo後のズームレベルでの longitude range をメルカトル式で計算
+    // （現在の bounds を使うと flyTo でズームが変わった際にオフセットがずれるため）
+    // MapLibre のデフォルトタイルサイズは 512px
+    const lngRange = mapWidth * (360 / (512 * Math.pow(2, currentZoom)))
     const lngOffset = (offsetX / mapWidth) * lngRange
-    
+
     return {
       center: [cafe.lng + lngOffset, cafe.lat] as [number, number],
       zoom: currentZoom
