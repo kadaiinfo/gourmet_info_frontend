@@ -15,11 +15,58 @@ function toMinutes(hourStr: string, minuteStr: string, meridiem?: string): numbe
 }
 
 // "H:MM AM/PM" のような時刻文字列から分を返す（AM/PMなしは24h扱い）
-function parseTimeStr(timeStr: string, fallbackMeridiem?: string): number | null {
+function parseTimeStr(timeStr: string, meridiem?: string): number | null {
   const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i)
   if (!match) return null
-  const meridiem = match[3] || fallbackMeridiem
-  return toMinutes(match[1], match[2], meridiem)
+  const mer = match[3] || meridiem
+  return toMinutes(match[1], match[2], mer)
+}
+
+// "start – end" 形式の1つの時間帯をパースして [startMin, endMin] を返す
+function parseRange(rangeStr: string): [number, number] | null {
+  const match = rangeStr.trim().match(
+    /^(\d{1,2}:\d{2})(?:\s*(AM|PM))?\s*[-–]\s*(\d{1,2}:\d{2})(?:\s*(AM|PM))?$/i
+  )
+  if (!match) return null
+
+  const [, startTime, startMer, endTime, endMer] = match
+
+  let effectiveStartMer = startMer || undefined
+  let effectiveEndMer = endMer || undefined
+
+  if (!startMer && endMer) {
+    // 終了側だけ AM/PM がある場合、開始側を推測する
+    // 例: "5:00 – 11:00 PM" → 両方PM（5PM〜11PM）
+    // 例: "10:00 – 6:00 PM" → AMからPM（10AM〜6PM）
+    const startH = parseInt(startTime.split(':')[0])
+    const endH = parseInt(endTime.split(':')[0])
+    if (startH > endH) {
+      // 開始時刻 > 終了時刻（PM換算）→ 開始は AM
+      effectiveStartMer = 'AM'
+      effectiveEndMer = 'PM'
+    } else {
+      // 開始時刻 <= 終了時刻（PM換算）→ 両方 PM
+      effectiveStartMer = 'PM'
+      effectiveEndMer = 'PM'
+    }
+  } else if (startMer && !endMer) {
+    // 開始側だけ AM/PM がある場合、終了側も同じにする
+    effectiveEndMer = startMer
+  }
+
+  const startMinutes = parseTimeStr(startTime, effectiveStartMer)
+  const endMinutes = parseTimeStr(endTime, effectiveEndMer)
+
+  if (startMinutes === null || endMinutes === null) return null
+  return [startMinutes, endMinutes]
+}
+
+// 現在時刻が時間帯内かどうか判定（日またぎ対応）
+function isInRange(currentMinutes: number, start: number, end: number): boolean {
+  if (end < start) {
+    return currentMinutes >= start || currentMinutes < end
+  }
+  return currentMinutes >= start && currentMinutes < end
 }
 
 /**
@@ -45,8 +92,8 @@ export function isOpenNow(opening_hours: string | null | undefined): boolean | n
 
   if (!todayLine) return null
 
-  // 定休日 / Closed
-  if (todayLine.includes('定休日') || /closed/i.test(todayLine)) return false
+  // 定休日 / 閉業 / Closed
+  if (todayLine.includes('定休日') || todayLine.includes('閉業') || /closed/i.test(todayLine)) return false
 
   // 24時間営業
   if (todayLine.includes('24 時間営業') || /open 24 hours/i.test(todayLine)) return true
@@ -56,27 +103,17 @@ export function isOpenNow(opening_hours: string | null | undefined): boolean | n
   if (colonIdx === -1) return null
   const timePart = todayLine.slice(colonIdx + 1).trim()
 
-  // "start – end" をパース。区切りはハイフン(-) または endash(–)
-  const rangeMatch = timePart.match(
-    /^(\d{1,2}:\d{2})(?:\s*(AM|PM))?\s*[-–]\s*(\d{1,2}:\d{2})(?:\s*(AM|PM))?$/i
-  )
-  if (!rangeMatch) return null
-
-  const [, startTime, startMer, endTime, endMer] = rangeMatch
-
-  // 末尾の AM/PM が両方に適用されるケース（例: "6:30 – 10:30 AM"）
-  const effectiveStartMer = startMer || (endMer && !startMer ? endMer : undefined)
-  const effectiveEndMer = endMer || undefined
-
-  const startMinutes = parseTimeStr(startTime, effectiveStartMer)
-  const endMinutes = parseTimeStr(endTime, effectiveEndMer)
-
-  if (startMinutes === null || endMinutes === null) return null
-
-  // 日をまたぐ営業時間（例: 22:00 – 2:00）
-  if (endMinutes < startMinutes) {
-    return currentMinutes >= startMinutes || currentMinutes < endMinutes
+  // カンマ区切りで複数時間帯に分割してそれぞれ判定
+  const rangeStrings = timePart.split(',')
+  for (const rangeStr of rangeStrings) {
+    const range = parseRange(rangeStr)
+    if (range && isInRange(currentMinutes, range[0], range[1])) {
+      return true
+    }
   }
 
-  return currentMinutes >= startMinutes && currentMinutes < endMinutes
+  // いずれの時間帯にも該当しなかった場合
+  // パースできた時間帯が1つでもあれば閉店、なければ判定不能
+  const parsedAny = rangeStrings.some(r => parseRange(r) !== null)
+  return parsedAny ? false : null
 }
