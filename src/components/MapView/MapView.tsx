@@ -48,7 +48,7 @@ export default function MapView() {
     const userLocationMarkerRef = useRef<maplibregl.Marker | null>(null) // 現在地マーカーの参照
     const [expandTrigger, setExpandTrigger] = useState(0) // 詳細パネル展開のトリガー
     const [filterOpenNow, setFilterOpenNow] = useState(false) // 「今空いてる！」フィルター状態
-    const [selectedGenre, setSelectedGenre] = useState<GenreId | null>(null) // ジャンルフィルター状態
+    const [selectedGenre, setSelectedGenre] = useState<GenreId[]>([]) // ジャンルフィルター状態
 
     // フィルター（今開いてる + ジャンル）を適用した店舗リスト
     const filteredCafes = useMemo(() => {
@@ -56,8 +56,10 @@ export default function MapView() {
         if (filterOpenNow) {
             result = result.filter(cafe => isOpenNow(cafe.opening_hours) === true)
         }
-        if (selectedGenre) {
-            result = result.filter(cafe => matchesGenre(cafe.categories, selectedGenre))
+        if (selectedGenre.length > 0) {
+            result = result.filter(cafe =>
+                selectedGenre.some(genreId => matchesGenre(cafe.categories, genreId))
+            )
         }
         return result
     }, [allCafes, filterOpenNow, selectedGenre])
@@ -289,10 +291,15 @@ export default function MapView() {
 
     // ジャンルフィルターが変わった時、選択中の店舗が該当ジャンル外なら閉じる
     useEffect(() => {
-        if (selectedGenre && selected && !matchesGenre(selected.categories, selectedGenre)) {
-            setSelected(null)
+        if (selectedGenre.length > 0 && selected) {
+            const matchesAnyGenre = selectedGenre.some(genreId =>
+                matchesGenre(selected.categories, genreId)
+            )
+            if (!matchesAnyGenre) {
+                setSelected(null)
+            }
         }
-    }, [selectedGenre])
+    }, [selectedGenre, selected])
 
     // ズームアウトしてクラスターマーカーが表示される時は、ポップアップと詳細バーを閉じる
     useEffect(() => {
@@ -333,7 +340,11 @@ export default function MapView() {
                 isOpenNowActive={filterOpenNow}
                 genres={GENRES}
                 selectedGenre={selectedGenre}
-                onGenreSelect={(genreId) => setSelectedGenre(prev => prev === genreId ? null : genreId)}
+                onGenreSelect={(genreId) => setSelectedGenre(prev =>
+                    prev.includes(genreId)
+                        ? prev.filter(id => id !== genreId)
+                        : [...prev, genreId]
+                )}
             />
 
             <div ref={mapContainerRef} className="map-container" />
@@ -365,7 +376,11 @@ export default function MapView() {
                     onShowNearbyCafes={handleShowNearbyCafeList}
                     genres={GENRES}
                     selectedGenre={selectedGenre}
-                    onGenreSelect={(genreId) => setSelectedGenre(prev => prev === genreId ? null : genreId)}
+                    onGenreSelect={(genreId) => setSelectedGenre(prev =>
+                        prev.includes(genreId)
+                            ? prev.filter(id => id !== genreId)
+                            : [...prev, genreId]
+                    )}
                 />
             )}
 

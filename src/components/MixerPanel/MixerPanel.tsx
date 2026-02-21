@@ -7,7 +7,7 @@ interface MixerPanelProps {
   onAreaSelect: (lng: number, lat: number) => void
   onShowNearbyCafes: () => void
   genres?: readonly { id: GenreId; label: string }[]
-  selectedGenre?: GenreId | null
+  selectedGenre?: GenreId[]
   onGenreSelect?: (genreId: GenreId) => void
 }
 
@@ -74,7 +74,7 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
               {genres.map(genre => (
                 <button
                   key={genre.id}
-                  className={`mixer-panel__genre-button${selectedGenre === genre.id ? ' active' : ''}`}
+                  className={`mixer-panel__genre-button${selectedGenre?.includes(genre.id) ? ' active' : ''}`}
                   onClick={() => onGenreSelect && onGenreSelect(genre.id)}
                 >
                   {genre.label}

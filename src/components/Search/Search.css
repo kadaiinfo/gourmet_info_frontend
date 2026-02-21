@@ -359,3 +359,18 @@
   background-color: #70523E;
   color: white;
 }
+
+/* フィルターアイコン */
+.filter-icon {
+  height: 34px;
+  width: auto;
+  pointer-events: none;
+  margin-left: 12px;
+}
+
+@media (max-width: 768px) {
+  .filter-icon {
+    height: 30px;
+    margin-left: 10px;
+  }
+}

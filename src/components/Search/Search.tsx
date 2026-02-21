@@ -17,7 +17,7 @@ interface SearchProps {
   onOpenNowToggle?: () => void
   isOpenNowActive?: boolean
   genres?: readonly { id: GenreId; label: string }[]
-  selectedGenre?: GenreId | null
+  selectedGenre?: GenreId[]
   onGenreSelect?: (genreId: GenreId) => void
 }
 
@@ -192,12 +192,15 @@ export default function Search({
             <button
               key={genre.id}
               type="button"
-              className={`genre-tag${selectedGenre === genre.id ? ' active' : ''}`}
+              className={`genre-tag${selectedGenre?.includes(genre.id) ? ' active' : ''}`}
               onClick={() => onGenreSelect && onGenreSelect(genre.id)}
             >
               {genre.label}
             </button>
           ))}
+          {(!selectedGenre || selectedGenre.length === 0) && !isOpenNowActive && (
+            <img src="/filter.png" className="filter-icon" alt="Filter" />
+          )}
         </div>
       )}
 

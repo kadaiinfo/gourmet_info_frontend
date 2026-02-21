@@ -2,8 +2,8 @@ export const GENRES = [
     { id: 'cafe',    label: 'カフェ' },
     { id: 'sweets',  label: 'スイーツ' },
     { id: 'gohan',   label: 'ランチ' },
-    { id: 'italian', label: 'イタリアン' },
     { id: 'ramen',   label: 'ラーメン・中華' },
+    { id: 'italian', label: 'イタリアン' },
 ] as const
 
 export type GenreId = typeof GENRES[number]['id']
