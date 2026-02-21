@@ -33,8 +33,13 @@ export const handleSearch = async (
       if (vv && vv.height < window.innerHeight - 50) {
         const onResize = () => {
           vv.removeEventListener('resize', onResize)
-          map.resize()
-          map.flyTo(position)
+          // WebViewでビューポートが完全に安定するまで待つ
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              map.resize()
+              map.flyTo(position)
+            })
+          })
         }
         vv.addEventListener('resize', onResize)
       } else {
