@@ -19,6 +19,8 @@ interface SearchProps {
   genres?: readonly { id: GenreId; label: string }[]
   selectedGenre?: GenreId[]
   onGenreSelect?: (genreId: GenreId) => void
+  onInputFocus?: () => void
+  onInputBlur?: () => void
 }
 
 export default function Search({
@@ -32,7 +34,9 @@ export default function Search({
   isOpenNowActive = false,
   genres,
   selectedGenre,
-  onGenreSelect
+  onGenreSelect,
+  onInputFocus,
+  onInputBlur
 }: SearchProps) {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<Cafe[]>([])
@@ -144,6 +148,10 @@ export default function Search({
               if (query.trim() && suggestions.length > 0) {
                 setShowSuggestions(true)
               }
+              onInputFocus?.()
+            }}
+            onBlur={() => {
+              onInputBlur?.()
             }}
             placeholder="店名や住所で検索..."
             className="search-input"

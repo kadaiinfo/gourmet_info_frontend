@@ -190,6 +190,32 @@ export default function MapView() {
         }
     }
 
+    // -------検索入力フォーカス時の地図操作制御-----------
+    // 検索入力にフォーカスした時、地図操作を無効化
+    const handleInputFocus = () => {
+        if (mapRef.current) {
+            mapRef.current.dragPan.disable()
+            mapRef.current.scrollZoom.disable()
+            mapRef.current.touchZoomRotate.disable()
+            mapRef.current.doubleClickZoom.disable()
+        }
+    }
+
+    // 検索入力からフォーカスが外れた時、地図操作を有効化
+    const handleInputBlur = () => {
+        if (mapRef.current) {
+            // 少し遅延させてから有効化（サジェストのクリックイベントを確実に処理するため）
+            setTimeout(() => {
+                if (mapRef.current) {
+                    mapRef.current.dragPan.enable()
+                    mapRef.current.scrollZoom.enable()
+                    mapRef.current.touchZoomRotate.enable()
+                    mapRef.current.doubleClickZoom.enable()
+                }
+            }, 100)
+        }
+    }
+
     // 地図を初期化・イベントリスナー設定（コンポーネント初回マウント時のみ）
     useEffect(() => {
         if (!mapContainerRef.current) return
@@ -345,6 +371,8 @@ export default function MapView() {
                         ? prev.filter(id => id !== genreId)
                         : [...prev, genreId]
                 )}
+                onInputFocus={handleInputFocus}
+                onInputBlur={handleInputBlur}
             />
 
             <div ref={mapContainerRef} className="map-container" />
