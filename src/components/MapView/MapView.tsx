@@ -49,6 +49,8 @@ export default function MapView() {
     const [expandTrigger, setExpandTrigger] = useState(0) // 詳細パネル展開のトリガー
     const [filterOpenNow, setFilterOpenNow] = useState(false) // 「今空いてる！」フィルター状態
     const [selectedGenre, setSelectedGenre] = useState<GenreId[]>([]) // ジャンルフィルター状態
+    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false) // キーボード表示状態
+    const isKeyboardOpenRef = useRef(false) // キーボード表示状態のRef（ResizeObserverで参照するため）
 
     // フィルター（今開いてる + ジャンル）を適用した店舗リスト
     const filteredCafes = useMemo(() => {
@@ -63,6 +65,11 @@ export default function MapView() {
         }
         return result
     }, [allCafes, filterOpenNow, selectedGenre])
+
+    // isKeyboardOpenの状態をRefに同期
+    useEffect(() => {
+        isKeyboardOpenRef.current = isKeyboardOpen
+    }, [isKeyboardOpen])
 
     // カフェデータを読み込む（コンポーネント初回マウント時のみ）
     useEffect(() => {
@@ -193,6 +200,7 @@ export default function MapView() {
     // -------検索入力フォーカス時の地図操作制御-----------
     // 検索入力にフォーカスした時、地図操作を無効化
     const handleInputFocus = () => {
+        setIsKeyboardOpen(true)
         if (mapRef.current) {
             mapRef.current.dragPan.disable()
             mapRef.current.scrollZoom.disable()
@@ -203,6 +211,7 @@ export default function MapView() {
 
     // 検索入力からフォーカスが外れた時、地図操作を有効化
     const handleInputBlur = () => {
+        setIsKeyboardOpen(false)
         if (mapRef.current) {
             // 少し遅延させてから有効化（サジェストのクリックイベントを確実に処理するため）
             setTimeout(() => {
@@ -276,15 +285,31 @@ export default function MapView() {
         const resizeObserver = new ResizeObserver(() => {
             const activeEl = document.activeElement
             if (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement) return
+            if (isKeyboardOpenRef.current) return
             map.resize()
         })
         if (mapContainerRef.current) {
             resizeObserver.observe(mapContainerRef.current)
         }
 
+        // visualViewportのresizeイベントも監視（WebView対策）
+        const handleVisualViewportResize = () => {
+            if (isKeyboardOpenRef.current) return
+            const activeEl = document.activeElement
+            if (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement) return
+            map.resize()
+        }
+        const vv = window.visualViewport
+        if (vv) {
+            vv.addEventListener('resize', handleVisualViewportResize)
+        }
+
         // クリーンアップ関数：useEffectが終了するときmapをremoveする
         return () => {
             resizeObserver.disconnect()
+            if (vv) {
+                vv.removeEventListener('resize', handleVisualViewportResize)
+            }
             map.off('moveend', handleMoveEnd)
             map.off('zoomend', handleZoomEnd)
             map.remove()
