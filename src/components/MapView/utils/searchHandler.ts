@@ -11,7 +11,6 @@ export const handleSearch = async (
   map: maplibregl.Map | null,
   mapLoaded: boolean,
   setSelected: (cafe: Cafe | null) => void,
-  updateMarkers: () => void,
   allCafes: Cafe[],
   markersRef: React.MutableRefObject<Map<string, maplibregl.Marker>>
 ) => {

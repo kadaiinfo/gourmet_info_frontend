@@ -186,7 +186,6 @@ export default function MapView() {
             mapRef.current,
             mapLoaded,
             setSelected,
-            updateMarkers,
             filteredCafes,
             markersRef
         )
