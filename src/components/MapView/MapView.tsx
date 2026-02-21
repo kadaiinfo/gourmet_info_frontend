@@ -18,6 +18,7 @@ import { handleSearch } from "./utils/searchHandler"
 import { getCurrentLocation, updateUserLocationMarker, moveToUserLocation } from "./utils/geolocation"
 import { isOpenNow } from "../../utils/openingHoursParser"
 import { GENRES, type GenreId, matchesGenre } from "../../utils/genreFilter"
+import { getCafesInArea } from "./utils/visibleCafes"
 
 // 地図を描画するコンポーネント
 // この記事を参考に実装した 
@@ -145,14 +146,28 @@ export default function MapView() {
 
     // エリア選択で地図移動 - MixerPanel の地域ボタンクリック時
     const handleAreaSelect = (lng: number, lat: number) => {
+        setSelected(null) // Informationパネルを閉じる
+
         if (mapRef.current) {
+            // 移動先の範囲のカフェを取得して事前にマーカーを描画
+            const targetCafes = getCafesInArea(
+                [lng, lat],
+                DEFAULT_ZOOM_LEVEL,
+                filteredCafes,
+                mapRef.current.getContainer()
+            )
+
+            // 移動先のマーカーを事前に描画
+            targetCafes.slice().reverse().forEach(cafe => {
+                addMarkerForCafe(cafe, mapRef.current!, markersRef.current, setSelected)
+            })
+
             mapRef.current.flyTo({
                 center: [lng, lat],
                 zoom: DEFAULT_ZOOM_LEVEL,  // デフォルトズームで指定座標に移動
                 duration: 3000
             })
         }
-        setSelected(null) // Informationパネルを閉じる
     }
 
 
@@ -171,7 +186,9 @@ export default function MapView() {
             mapRef.current,
             mapLoaded,
             setSelected,
-            updateMarkers
+            updateMarkers,
+            filteredCafes,
+            markersRef
         )
     }
 
