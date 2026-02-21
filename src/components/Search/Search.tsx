@@ -148,6 +148,20 @@ export default function Search({
             placeholder="店名や住所で検索..."
             className="search-input"
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("")
+                setShowSuggestions(false)
+                setSuggestions([])
+              }}
+              className="search-clear-button"
+              aria-label="クリア"
+            >
+              ×
+            </button>
+          )}
         </div>
         <div className="search-buttons">
           {onSettingsClick && (
