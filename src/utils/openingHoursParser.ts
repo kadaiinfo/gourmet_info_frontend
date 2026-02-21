@@ -38,9 +38,14 @@ function parseRange(rangeStr: string): [number, number] | null {
     // 終了側だけ AM/PM がある場合、開始側を推測する
     // 例: "5:00 – 11:00 PM" → 両方PM（5PM〜11PM）
     // 例: "10:00 – 6:00 PM" → AMからPM（10AM〜6PM）
+    // 例: "12:00 – 5:00 PM" → 両方PM（12PM〜5PM）※12は正午として扱う
     const startH = parseInt(startTime.split(':')[0])
     const endH = parseInt(endTime.split(':')[0])
-    if (startH > endH) {
+    if (startH === 12) {
+      // 12:00 は正午（PM）として扱う
+      effectiveStartMer = 'PM'
+      effectiveEndMer = 'PM'
+    } else if (startH > endH) {
       // 開始時刻 > 終了時刻（PM換算）→ 開始は AM
       effectiveStartMer = 'AM'
       effectiveEndMer = 'PM'
