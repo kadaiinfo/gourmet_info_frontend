@@ -73,42 +73,42 @@ export type DetailedCafe = {
     google_maps_uri?: string | null
 }
 
-// APIから取得したデータのキャッシュ
+// APIから取得したデータのキャッシュ（TTL付き）
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5分
 let apiDataCache: CafeDataFromAPI[] | null = null
+let apiDataCacheTime = 0
 let cafeDataCache: Cafe[] | null = null
 
 // 開発環境かどうかを判定
 const isDevelopment = import.meta.env.MODE === 'development'
 
+const isCacheFresh = () =>
+    apiDataCache !== null && Date.now() - apiDataCacheTime < CACHE_TTL_MS
+
 // APIからカフェデータを取得（開発環境ではローカルデータを使用）
 const fetchCafeDataFromAPI = async (): Promise<CafeDataFromAPI[]> => {
-    if (apiDataCache) {
-        return apiDataCache
+    if (isCacheFresh()) {
+        return apiDataCache!
     }
 
     // 開発環境ではローカルデータを使用
     if (isDevelopment) {
-        console.log('Using local data in development mode')
         apiDataCache = cafe_data as CafeDataFromAPI[]
+        apiDataCacheTime = Date.now()
+        cafeDataCache = null // 派生キャッシュも無効化
         return apiDataCache
     }
 
-    // 本番環境ではAPI(Cloudflare KV)から取得
-    try {
-        const response = await fetch('/api/fetch_cafedata')
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const data: CafeDataFromAPI[] = await response.json()
-        apiDataCache = data
-        return data
-    } catch (error) {
-        console.error('Failed to fetch cafe data:', error)
-        // APIが失敗した場合もローカルデータにフォールバック
-        console.warn('Falling back to local data')
-        apiDataCache = cafe_data as CafeDataFromAPI[]
-        return apiDataCache
+    // 本番環境ではAPI(Cloudflare KV)から取得（失敗時はそのまま伝播）
+    const response = await fetch('/api/fetch_cafedata')
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
     }
+    const data: CafeDataFromAPI[] = await response.json()
+    apiDataCache = data
+    apiDataCacheTime = Date.now()
+    cafeDataCache = null // 派生キャッシュも無効化
+    return data
 }
 
 // 軽量データを生成
@@ -131,11 +131,11 @@ const generateCafeData = (apiData: CafeDataFromAPI[]): Cafe[] => {
 
 // 軽量データを取得
 export const getCafeData = async (): Promise<Cafe[]> => {
+    const apiData = await fetchCafeDataFromAPI() // 期限切れなら派生キャッシュもnullに
     if (cafeDataCache) {
         return cafeDataCache
     }
 
-    const apiData = await fetchCafeDataFromAPI()
     const cafes = generateCafeData(apiData)
 
     // 日付順（新しい順）にソート
@@ -149,10 +149,10 @@ export const getCafeData = async (): Promise<Cafe[]> => {
     return cafeDataCache
 }
 
-// 詳細データを取得
+// 詳細データを取得（VIDEO は地図に出さないので詳細でも返さない）
 export const getCafeDetail = async (id: string): Promise<DetailedCafe | null> => {
     const apiData = await fetchCafeDataFromAPI()
-    const cafe = apiData.find(cafe => cafe.id === id)
+    const cafe = apiData.find(c => c.id === id && c.media_type !== "VIDEO")
     return cafe || null
 }
 

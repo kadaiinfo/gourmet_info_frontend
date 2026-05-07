@@ -35,13 +35,16 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,json}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/scontent\.cdninstagram\.com\/.*/i,
-            handler: 'CacheFirst',
+            urlPattern: /^https:\/\/[^/]*cdninstagram\.com\//i,
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'instagram-images',
               expiration: {
-                maxEntries: 100,
+                maxEntries: 500,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // 1週間
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
               }
             }
           }
