@@ -58,8 +58,8 @@ export const addMarkerForCafe = (
           pageTitle,
           cafePage
         )
-      } catch (error) {
-        console.log('History API not available in this context')
+      } catch {
+        // History API が使えない WebView 等では何もしない
       }
     }
   })

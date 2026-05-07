@@ -12,7 +12,8 @@ export const onRequestGet: PagesFunction<{ "cafe-map": KVNamespace }> = async (c
       return new Response(text, {
         headers: {
           "content-type": "application/json; charset=utf-8",
-          "cache-control": "max-age=60, stale-while-revalidate=30",
+          // データは1日1〜2回しか変わらないので 1時間キャッシュ + 1日 stale-while-revalidate
+          "cache-control": "max-age=3600, stale-while-revalidate=86400",
         },
       })
     } catch (e) {
