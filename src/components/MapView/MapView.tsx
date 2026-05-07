@@ -1,476 +1,241 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import { useEffect, useRef, useState } from "react"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import "./MapView.css"
-import { getCafeData, searchCafes, type Cafe } from "../../lib/dataClient"
+import { searchCafes, type Cafe } from "../../lib/dataClient"
 import Information from "../Information/Information.tsx"
 import Search from "../Search/Search.tsx"
 import MixerPanel from "../MixerPanel/MixerPanel.tsx"
 import CafeList from "../CafeList/CafeList.tsx"
 import NearbyCafeList from "../NearbyCafeList/NearbyCafeList.tsx"
 
-// Utils imports
-import { saveMapState, loadMapState } from "./utils/mapState"
-import { showPopup, hidePopup } from "./utils/popupManager"
 import { handleCafeSelection } from "./utils/mapPosition"
-import { updateMarkersWithZoom, addMarkerForCafe } from "./utils/markerManager"
+import { addMarkerForCafe } from "./utils/markerManager"
 import { handleSearch } from "./utils/searchHandler"
-import { getCurrentLocation, updateUserLocationMarker, moveToUserLocation } from "./utils/geolocation"
 import { isOpenNow } from "../../utils/openingHoursParser"
-import { GENRES, type GenreId, matchesGenre } from "../../utils/genreFilter"
+import { GENRES, matchesGenre } from "../../utils/genreFilter"
 import { getCafesInArea } from "./utils/visibleCafes"
 
-// 地図を描画するコンポーネント
-// この記事を参考に実装した 
-// https://zenn.dev/asahina820/books/c29592e397a35b/viewer/0200eb
+import { DEFAULT_ZOOM_LEVEL, ZOOM_THRESHOLD } from "./constants"
+import { useCafeData } from "./hooks/useCafeData"
+import { useFilters } from "./hooks/useFilters"
+import { useKeyboardAvoidance } from "./hooks/useKeyboardAvoidance"
+import { useMapInstance } from "./hooks/useMapInstance"
+import { useGeolocation } from "./hooks/useGeolocation"
+import { useMarkerSync } from "./hooks/useMarkerSync"
+import { usePopup } from "./hooks/usePopup"
+
 export default function MapView() {
-    // [MapView 実行] → JSX を返す (<div>)
-    //           ↓
-    // [React が DOM 作成] → ref に DOM をセット
-    //           ↓
-    // [useEffect 実行] → MapLibre に DOM を渡して地図描画
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<maplibregl.Map | null>(null)
+  const isKeyboardOpenRef = useRef(false)
 
-    const mapContainerRef = useRef(null)
-    const mapRef = useRef<maplibregl.Map | null>(null)
-    const [allCafes, setAllCafes] = useState<Cafe[]>([]) // 全店舗情報を保存する状態
-    const [cafeDataLoaded, setCafeDataLoaded] = useState(false) // カフェデータの読み込み状態
-    const [selected, setSelected] = useState<Cafe | null>(null) // 選択された店舗の状態
-    const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map()) // マーカーの参照をMapで管理
-    const currentPopupRef = useRef<maplibregl.Popup | null>(null) // 現在表示中のポップアップの参照
-    const [mapLoaded, setMapLoaded] = useState(false) // マップの読み込み状態
-    const DEFAULT_ZOOM_LEVEL = 17 // デフォルトのズームレベル
-    const [currentZoom, setCurrentZoom] = useState(DEFAULT_ZOOM_LEVEL) // 現在のズームレベルの状態
-    const ZOOM_THRESHOLD = 14 // この値以下だとマーカーを表示しない
-    const [showMixerPanel, setShowMixerPanel] = useState(false) // MixerPanel表示状態
-    const [showCafeList, setShowCafeList] = useState(false) // CafeList表示状態
-    const [showNearbyCafeList, setShowNearbyCafeList] = useState(false) // NearbyCafeList表示状態
-    const [mapCenter, setMapCenter] = useState<[number, number] | null>(null) // 地図中心位置の状態
-    const [isLocating, setIsLocating] = useState(false) // 位置情報取得中の状態
-    const userLocationMarkerRef = useRef<maplibregl.Marker | null>(null) // 現在地マーカーの参照
-    const [expandTrigger, setExpandTrigger] = useState(0) // 詳細パネル展開のトリガー
-    const [filterOpenNow, setFilterOpenNow] = useState(false) // 「今空いてる！」フィルター状態
-    const [selectedGenre, setSelectedGenre] = useState<GenreId[]>([]) // ジャンルフィルター状態
-    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false) // キーボード表示状態
-    const isKeyboardOpenRef = useRef(false) // キーボード表示状態のRef（ResizeObserverで参照するため）
+  // UI 状態（パネル表示・選択中の店舗）
+  const [selected, setSelected] = useState<Cafe | null>(null)
+  const [showMixerPanel, setShowMixerPanel] = useState(false)
+  const [showCafeList, setShowCafeList] = useState(false)
+  const [showNearbyCafeList, setShowNearbyCafeList] = useState(false)
 
-    // フィルター（今開いてる + ジャンル）を適用した店舗リスト
-    const filteredCafes = useMemo(() => {
-        let result = allCafes
-        if (filterOpenNow) {
-            result = result.filter(cafe => isOpenNow(cafe.opening_hours) === true)
-        }
-        if (selectedGenre.length > 0) {
-            result = result.filter(cafe =>
-                selectedGenre.some(genreId => matchesGenre(cafe.categories, genreId))
-            )
-        }
-        return result
-    }, [allCafes, filterOpenNow, selectedGenre])
+  // データ・フィルター
+  const { allCafes, cafeDataLoaded } = useCafeData()
+  const {
+    filterOpenNow,
+    selectedGenre,
+    filteredCafes,
+    toggleOpenNow,
+    toggleGenre,
+  } = useFilters(allCafes)
 
-    // isKeyboardOpenの状態をRefに同期
-    useEffect(() => {
-        isKeyboardOpenRef.current = isKeyboardOpen
-    }, [isKeyboardOpen])
+  // 入力フォーカス時の地図操作制御
+  const { handleInputFocus, handleInputBlur } = useKeyboardAvoidance({
+    mapRef,
+    isKeyboardOpenRef,
+  })
 
-    // カフェデータを読み込む（コンポーネント初回マウント時のみ）
-    useEffect(() => {
-        const loadCafeData = async () => {
-            try {
-                const data = await getCafeData()
-                setAllCafes(data)
-                setCafeDataLoaded(true)
-            } catch (error) {
-                console.error('Failed to load cafe data:', error)
-                setCafeDataLoaded(false)
-            }
-        }
-        loadCafeData()
-    }, [])
+  // 地図インスタンス
+  const { mapLoaded, currentZoom, mapCenter } = useMapInstance({
+    containerRef: mapContainerRef,
+    mapRef,
+    isKeyboardOpenRef,
+    onBackgroundClick: () => setSelected(null),
+  })
 
-    // マーカーを更新する関数（currentZoom使用）
-    // Reactコンポーネントは通常stateやpropsが変わるたびに再レンダリングされる
-    // useCallbackすることで、依存が変わらない限り同じ関数を再利用
-    const updateMarkers = useCallback(() => {
-        updateMarkersWithZoom(
-            currentZoom,
-            mapRef.current,
-            cafeDataLoaded,
-            filteredCafes,
-            ZOOM_THRESHOLD,
-            markersRef,
-            setSelected
-        )
-    }, [currentZoom, cafeDataLoaded, filteredCafes])
+  // 現在地
+  const { isLocating, handleLocationClick } = useGeolocation({
+    mapRef,
+    defaultZoom: DEFAULT_ZOOM_LEVEL,
+  })
 
-    // -------- 設定（MixerPanel）の処理------------
-    // 設定（MixerPanel）を開く - 検索バーの設定ボタンクリック時
-    const handleSettingsClick = () => {
-        setShowMixerPanel(true) // 設定パネルを開く
+  // マーカー同期
+  const { markersRef } = useMarkerSync({
+    mapRef,
+    mapLoaded,
+    cafeDataLoaded,
+    filteredCafes,
+    currentZoom,
+    mapCenter,
+    zoomThreshold: ZOOM_THRESHOLD,
+    setSelected,
+  })
+
+  // ポップアップ
+  const { expandTrigger } = usePopup({ selected, mapRef })
+
+  // ---- ハンドラ群 ----
+
+  const handleCafeSelect = (cafe: Cafe) => {
+    if (mapRef.current) {
+      addMarkerForCafe(cafe, mapRef.current, markersRef.current, setSelected)
     }
+    handleCafeSelection(cafe, mapRef.current, setSelected)
+  }
 
-    // 設定パネルを閉じる - MixerPanel の×ボタンクリック時
-    const handleCloseMixerPanel = () => {
-        setShowMixerPanel(false) // 設定パネルを閉じる
-    }
+  const handleAreaSelect = (lng: number, lat: number) => {
+    setSelected(null)
+    if (!mapRef.current) return
 
-    // カフェ一覧を表示 - MixerPanel の「カフェ一覧」ボタンクリック時
-    const handleShowCafeList = () => {
-        setShowMixerPanel(false)  // 設定パネルを閉じる
-        setShowCafeList(true)     // カフェ一覧を開く
-    }
-
-    // カフェ一覧を閉じる - CafeList の×ボタンクリック時
-    const handleCloseCafeList = () => {
-        setShowCafeList(false) // カフェ一覧を閉じる
-    }
-
-    // 近くのカフェ一覧を表示 - MixerPanel の「近くのお店を表示」ボタンクリック時
-    const handleShowNearbyCafeList = () => {
-        setShowMixerPanel(false)  // 設定パネルを閉じる
-        setShowNearbyCafeList(true)     // 近くのカフェ一覧を開く
-    }
-
-    // 近くのカフェ一覧を閉じる - NearbyCafeList の×ボタンクリック時
-    const handleCloseNearbyCafeList = () => {
-        setShowNearbyCafeList(false) // 近くのカフェ一覧を閉じる
-    }
-
-    // カフェ一覧からカフェを選択 - CafeList のアイテムクリック時
-    const handleCafeSelect = (cafe: Cafe) => {
-        // flyTo 開始前にマーカーを強制追加（移動中もマーカーが表示されるよう）
-        if (mapRef.current) {
-            addMarkerForCafe(cafe, mapRef.current, markersRef.current, setSelected)
-        }
-        handleCafeSelection(cafe, mapRef.current, setSelected)  // 地図移動＋選択状態更新（デフォルトズーム固定）
-    }
-
-    // エリア選択で地図移動 - MixerPanel の地域ボタンクリック時
-    const handleAreaSelect = (lng: number, lat: number) => {
-        setSelected(null) // Informationパネルを閉じる
-
-        if (mapRef.current) {
-            // 移動先の範囲のカフェを取得して事前にマーカーを描画
-            const targetCafes = getCafesInArea(
-                [lng, lat],
-                DEFAULT_ZOOM_LEVEL,
-                filteredCafes,
-                mapRef.current.getContainer()
-            )
-
-            // 移動先のマーカーを事前に描画
-            targetCafes.slice().reverse().forEach(cafe => {
-                addMarkerForCafe(cafe, mapRef.current!, markersRef.current, setSelected)
-            })
-
-            mapRef.current.flyTo({
-                center: [lng, lat],
-                zoom: DEFAULT_ZOOM_LEVEL,  // デフォルトズームで指定座標に移動
-                duration: 3000
-            })
-        }
-    }
-
-
-    // ---------検索(Search)の処理---------------
-    // 検索実行 - Search コンポーネントからの検索クエリ処理
-    const handleSearchAction = async (query: string) => {
-        const searchFn = filterOpenNow
-            ? async (q: string) => {
-                const results = await searchCafes(q)
-                return results.filter(cafe => isOpenNow(cafe.opening_hours) === true)
-              }
-            : searchCafes
-        await handleSearch(
-            query,
-            searchFn,
-            mapRef.current,
-            mapLoaded,
-            setSelected,
-            filteredCafes,
-            markersRef
-        )
-    }
-
-    // -------現在地の処理-----------
-    // 現在地を取得して地図に表示
-    const handleLocationClick = async () => {
-        if (isLocating) return // 既に取得中の場合は何もしない
-
-        setIsLocating(true)
-        try {
-            const location = await getCurrentLocation()
-
-            // 現在地マーカーを更新
-            updateUserLocationMarker(mapRef.current, location, userLocationMarkerRef)
-
-            // 地図を現在地に移動
-            moveToUserLocation(mapRef.current, location, DEFAULT_ZOOM_LEVEL)
-        } catch (error) {
-            console.error('位置情報の取得に失敗:', error)
-            alert(error instanceof Error ? error.message : '位置情報の取得に失敗しました')
-        } finally {
-            setIsLocating(false)
-        }
-    }
-
-    // -------検索入力フォーカス時の地図操作制御-----------
-    // 検索入力にフォーカスした時、地図操作を無効化
-    const handleInputFocus = () => {
-        setIsKeyboardOpen(true)
-        if (mapRef.current) {
-            mapRef.current.dragPan.disable()
-            mapRef.current.scrollZoom.disable()
-            mapRef.current.touchZoomRotate.disable()
-            mapRef.current.doubleClickZoom.disable()
-        }
-    }
-
-    // 検索入力からフォーカスが外れた時、地図操作を有効化
-    const handleInputBlur = () => {
-        setIsKeyboardOpen(false)
-        if (mapRef.current) {
-            // 少し遅延させてから有効化（サジェストのクリックイベントを確実に処理するため）
-            setTimeout(() => {
-                if (mapRef.current) {
-                    mapRef.current.dragPan.enable()
-                    mapRef.current.scrollZoom.enable()
-                    mapRef.current.touchZoomRotate.enable()
-                    mapRef.current.doubleClickZoom.enable()
-                }
-            }, 100)
-        }
-    }
-
-    // 地図を初期化・イベントリスナー設定（コンポーネント初回マウント時のみ）
-    useEffect(() => {
-        if (!mapContainerRef.current) return
-
-
-        // 保存された地図状態を復元(savedStateがあれば地図の中心やズームを復元，なければデフォルト位置に)
-        const savedState = loadMapState()
-        const initialCenter: [number, number] = savedState?.center || [130.5548586, 31.5901844]
-        const initialZoom = savedState?.zoom || DEFAULT_ZOOM_LEVEL
-
-        // maplibregl.Map で地図を生成し，mapRef.currentに保持する
-        const map = new maplibregl.Map({
-            container: mapContainerRef.current, // マップを表示するHTML要素を指定する
-            style: "https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json", // 地図のスタイルを指定（日中モード）
-            center: initialCenter, // 地図の中心座標（保存された位置または初期位置）
-            zoom: initialZoom, // 地図のズームレベル（保存されたズームまたは初期ズーム）
-        })
-
-        mapRef.current = map
-
-        // マップの読み込み完了を待つ
-        map.on('load', () => {
-            setMapLoaded(true)
-        })
-
-
-        // 以下に2つのコールバック関数を定義
-        // 地図の移動時に地図の状態を更新するコールバック関数
-        const handleMoveEnd = () => {
-            const currentMapZoom = map.getZoom()
-            const center = map.getCenter()
-            // 状態を更新してuseEffectで地図の状態の更新をトリガー
-            setCurrentZoom(currentMapZoom)
-            setMapCenter([center.lng, center.lat])
-            // 位置変更を保存
-            saveMapState([center.lng, center.lat], currentMapZoom)
-        }
-
-        // ズーム操作が完了した時に呼ばれるコールバック関数
-        const handleZoomEnd = () => {
-            const newZoom = map.getZoom() // 現在のzoomレベルを保存
-            const center = map.getCenter() // 現在の地図中心座標を保存
-            setCurrentZoom(newZoom) // 変更を反映
-            saveMapState([center.lng, center.lat], newZoom) //ローカルストレージに保存
-        }
-
-        // maplibregl.Map が提供するイベントにリスナー
-        map.on('moveend', handleMoveEnd) // ユーザーが地図をドラッグして移動し終わったときに handleMoveEnd を実行
-        map.on('zoomend', handleZoomEnd) // ユーザーが地図のズーム操作を終えたときに handleZoomEnd を実行
-
-        // 地図の背景クリック時の処理
-        map.on('click', () => {
-            setSelected(null)
-        })
-
-        // ウィンドウリサイズ時に MapLibre の内部サイズを更新
-        // ただし input にフォーカス中（キーボード表示中）はスキップして地図が動かないようにする
-        const resizeObserver = new ResizeObserver(() => {
-            const activeEl = document.activeElement
-            if (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement) return
-            if (isKeyboardOpenRef.current) return
-            map.resize()
-        })
-        if (mapContainerRef.current) {
-            resizeObserver.observe(mapContainerRef.current)
-        }
-
-        // visualViewportのresizeイベントも監視（WebView対策）
-        const handleVisualViewportResize = () => {
-            if (isKeyboardOpenRef.current) return
-            const activeEl = document.activeElement
-            if (activeEl instanceof HTMLInputElement || activeEl instanceof HTMLTextAreaElement) return
-            map.resize()
-        }
-        const vv = window.visualViewport
-        if (vv) {
-            vv.addEventListener('resize', handleVisualViewportResize)
-        }
-
-        // クリーンアップ関数：useEffectが終了するときmapをremoveする
-        return () => {
-            resizeObserver.disconnect()
-            if (vv) {
-                vv.removeEventListener('resize', handleVisualViewportResize)
-            }
-            map.off('moveend', handleMoveEnd)
-            map.off('zoomend', handleZoomEnd)
-            map.remove()
-        }
-    }, []) //初回マウント時だけ実行（依存配列が [] なので1回きり）
-
-
-    // 初回マーカー表示（地図とカフェデータ読み込み完了時のみ）
-    useEffect(() => {
-        if (mapLoaded && cafeDataLoaded) {
-            updateMarkers()
-        }
-    }, [mapLoaded, cafeDataLoaded, updateMarkers]) //どれか更新が入ると処理が走る
-
-
-    // マーカー更新（ズーム・地図移動時に毎回実行）
-    useEffect(() => {
-        if (mapRef.current && cafeDataLoaded && mapLoaded) {
-            updateMarkers()
-        }
-    }, [currentZoom, mapCenter, updateMarkers, cafeDataLoaded, mapLoaded]) //どれか更新が入ると処理が走る
-
-
-    // 「今開いてる！」フィルターがオンになった時、選択中の店舗が営業時間外なら閉じる
-    useEffect(() => {
-        if (filterOpenNow && selected && isOpenNow(selected.opening_hours) !== true) {
-            setSelected(null)
-        }
-    }, [filterOpenNow])
-
-    // ジャンルフィルターが変わった時、選択中の店舗が該当ジャンル外なら閉じる
-    useEffect(() => {
-        if (selectedGenre.length > 0 && selected) {
-            const matchesAnyGenre = selectedGenre.some(genreId =>
-                matchesGenre(selected.categories, genreId)
-            )
-            if (!matchesAnyGenre) {
-                setSelected(null)
-            }
-        }
-    }, [selectedGenre, selected])
-
-    // ズームアウトしてクラスターマーカーが表示される時は、ポップアップと詳細バーを閉じる
-    useEffect(() => {
-        if (currentZoom < ZOOM_THRESHOLD && selected) {
-            setSelected(null)
-        }
-    }, [currentZoom])
-
-    // ポップアップクリック時の処理
-    const handlePopupClick = useCallback(() => {
-        setExpandTrigger(prev => prev + 1)
-    }, [])
-
-    // ポップアップ表示制御（カフェ選択状態変更時に毎回実行）
-    useEffect(() => {
-        if (selected) {
-            showPopup(selected, mapRef.current, currentPopupRef, handlePopupClick)
-        } else {
-            hidePopup(currentPopupRef)
-        }
-    }, [selected, handlePopupClick])
-
-
-
-
-    // ref={mapContainerRef}で、以下のdiv要素をmapContainerRef.currentに入れる
-    return (
-        <div className="map-layout">
-            {/* 検索欄の表示 */}
-            <Search
-                onSearch={handleSearchAction}
-                onSettingsClick={handleSettingsClick}
-                onLocationClick={handleLocationClick}
-                isLocating={isLocating}
-                cafes={filteredCafes}
-                onSuggestionSelect={handleCafeSelect}
-                onOpenNowToggle={() => setFilterOpenNow(prev => !prev)}
-                isOpenNowActive={filterOpenNow}
-                genres={GENRES}
-                selectedGenre={selectedGenre}
-                onGenreSelect={(genreId) => setSelectedGenre(prev =>
-                    prev.includes(genreId)
-                        ? prev.filter(id => id !== genreId)
-                        : [...prev, genreId]
-                )}
-                onInputFocus={handleInputFocus}
-                onInputBlur={handleInputBlur}
-            />
-
-            <div ref={mapContainerRef} className="map-container" />
-
-            {/* カフェデータ読み込み中のスピナー */}
-            {!cafeDataLoaded && (
-                <div className="map-loading-overlay">
-                    <div className="map-loading-spinner" />
-                </div>
-            )}
-
-            {/* 「今開いてる！」フィルター中の注意書き */}
-            {filterOpenNow && (
-                <div className={`open-now-notice${selected ? ' with-info' : ''}`}>
-                    営業時間の情報は取材時の情報に基づきます。<br />正確な情報は、店舗に直接お問い合わせください。
-                </div>
-            )}
-
-
-            {/* InformationUIの表示 */}
-            {selected && <Information cafe={selected} onClose={() => setSelected(null)} expandTrigger={expandTrigger} />}
-
-            {/* 設定パネルの表示 */}
-            {showMixerPanel && (
-                <MixerPanel
-                    onClose={handleCloseMixerPanel}
-                    onShowCafeList={handleShowCafeList}
-                    onAreaSelect={handleAreaSelect}
-                    onShowNearbyCafes={handleShowNearbyCafeList}
-                    genres={GENRES}
-                    selectedGenre={selectedGenre}
-                    onGenreSelect={(genreId) => setSelectedGenre(prev =>
-                        prev.includes(genreId)
-                            ? prev.filter(id => id !== genreId)
-                            : [...prev, genreId]
-                    )}
-                />
-            )}
-
-            {/* 店舗リストの表示 */}
-            {showCafeList && (
-                <CafeList
-                    onCafeSelect={handleCafeSelect}
-                    onClose={handleCloseCafeList}
-                    cafes={filterOpenNow ? filteredCafes : undefined}
-                />
-            )}
-
-            {/* 近くの店舗リストの表示 */}
-            {showNearbyCafeList && (
-                <NearbyCafeList
-                    onCafeSelect={handleCafeSelect}
-                    onClose={handleCloseNearbyCafeList}
-                    cafes={filterOpenNow ? filteredCafes : undefined}
-                />
-            )}
-
-        </div>
+    // 移動先の範囲のカフェを取得して事前にマーカーを描画
+    const targetCafes = getCafesInArea(
+      [lng, lat],
+      DEFAULT_ZOOM_LEVEL,
+      filteredCafes,
+      mapRef.current.getContainer()
     )
+    targetCafes
+      .slice()
+      .reverse()
+      .forEach(cafe => {
+        addMarkerForCafe(cafe, mapRef.current!, markersRef.current, setSelected)
+      })
+
+    mapRef.current.flyTo({
+      center: [lng, lat],
+      zoom: DEFAULT_ZOOM_LEVEL,
+      duration: 3000,
+    })
+  }
+
+  const handleSearchAction = async (query: string) => {
+    const searchFn = filterOpenNow
+      ? async (q: string) => {
+          const results = await searchCafes(q)
+          return results.filter(cafe => isOpenNow(cafe.opening_hours) === true)
+        }
+      : searchCafes
+    await handleSearch(
+      query,
+      searchFn,
+      mapRef.current,
+      mapLoaded,
+      setSelected,
+      filteredCafes,
+      markersRef
+    )
+  }
+
+  // ---- 副作用：選択中の店舗とフィルターの整合 ----
+
+  // 「今開いてる！」がオンになった時、選択中が営業時間外なら閉じる
+  useEffect(() => {
+    if (filterOpenNow && selected && isOpenNow(selected.opening_hours) !== true) {
+      setSelected(null)
+    }
+  }, [filterOpenNow, selected])
+
+  // ジャンルフィルターに該当しない店舗が選択中なら閉じる
+  useEffect(() => {
+    if (selectedGenre.length > 0 && selected) {
+      const matchesAnyGenre = selectedGenre.some(genreId =>
+        matchesGenre(selected.categories, genreId)
+      )
+      if (!matchesAnyGenre) {
+        setSelected(null)
+      }
+    }
+  }, [selectedGenre, selected])
+
+  // ズームアウトでクラスター表示になる時は詳細を閉じる
+  useEffect(() => {
+    if (currentZoom < ZOOM_THRESHOLD && selected) {
+      setSelected(null)
+    }
+  }, [currentZoom, selected])
+
+  return (
+    <div className="map-layout">
+      <Search
+        onSearch={handleSearchAction}
+        onSettingsClick={() => setShowMixerPanel(true)}
+        onLocationClick={handleLocationClick}
+        isLocating={isLocating}
+        cafes={filteredCafes}
+        onSuggestionSelect={handleCafeSelect}
+        onOpenNowToggle={toggleOpenNow}
+        isOpenNowActive={filterOpenNow}
+        genres={GENRES}
+        selectedGenre={selectedGenre}
+        onGenreSelect={toggleGenre}
+        onInputFocus={handleInputFocus}
+        onInputBlur={handleInputBlur}
+      />
+
+      <div ref={mapContainerRef} className="map-container" />
+
+      {!cafeDataLoaded && (
+        <div className="map-loading-overlay">
+          <div className="map-loading-spinner" />
+        </div>
+      )}
+
+      {filterOpenNow && (
+        <div className={`open-now-notice${selected ? " with-info" : ""}`}>
+          営業時間の情報は取材時の情報に基づきます。
+          <br />
+          正確な情報は、店舗に直接お問い合わせください。
+        </div>
+      )}
+
+      {selected && (
+        <Information
+          cafe={selected}
+          onClose={() => setSelected(null)}
+          expandTrigger={expandTrigger}
+        />
+      )}
+
+      {showMixerPanel && (
+        <MixerPanel
+          onClose={() => setShowMixerPanel(false)}
+          onShowCafeList={() => {
+            setShowMixerPanel(false)
+            setShowCafeList(true)
+          }}
+          onAreaSelect={handleAreaSelect}
+          onShowNearbyCafes={() => {
+            setShowMixerPanel(false)
+            setShowNearbyCafeList(true)
+          }}
+          genres={GENRES}
+          selectedGenre={selectedGenre}
+          onGenreSelect={toggleGenre}
+        />
+      )}
+
+      {showCafeList && (
+        <CafeList
+          onCafeSelect={handleCafeSelect}
+          onClose={() => setShowCafeList(false)}
+          cafes={filterOpenNow ? filteredCafes : undefined}
+        />
+      )}
+
+      {showNearbyCafeList && (
+        <NearbyCafeList
+          onCafeSelect={handleCafeSelect}
+          onClose={() => setShowNearbyCafeList(false)}
+          cafes={filterOpenNow ? filteredCafes : undefined}
+        />
+      )}
+    </div>
+  )
 }
