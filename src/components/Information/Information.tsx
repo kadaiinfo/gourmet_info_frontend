@@ -248,7 +248,19 @@ export default function Information({ cafe, onClose, expandTrigger = 0 }: Inform
                         >
                             {!isEmbedLoaded && (
                                 <div className="info__embed-loading">
-                                    <div className="info__spinner"></div>
+                                    {cafe.media_url && (
+                                        <img
+                                            src={cafe.media_url}
+                                            alt={cafe.store_name ?? "cafe"}
+                                            className="info__embed-placeholder-img"
+                                            onError={(e) => {
+                                                ;(e.currentTarget as HTMLImageElement).style.display = "none"
+                                            }}
+                                        />
+                                    )}
+                                    <div className="info__embed-spinner-overlay">
+                                        <div className="info__spinner"></div>
+                                    </div>
                                 </div>
                             )}
                             <blockquote
