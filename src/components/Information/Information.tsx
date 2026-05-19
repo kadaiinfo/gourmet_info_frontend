@@ -150,9 +150,8 @@ export default function Information({ cafe, onClose, expandTrigger = 0 }: Inform
         return () => observer.disconnect()
     }, [cafe, detailedCafe])
 
-    // 画像は VIDEO の場合は thumbnail を優先
     const imgSrc = detailedCafe
-        ? (detailedCafe.media_type === "VIDEO" ? detailedCafe.thumbnail_url : detailedCafe.media_url) ?? ""
+        ? detailedCafe.media_url ?? ""
         : cafe.media_url ?? ""
 
     // 画面サイズを監視

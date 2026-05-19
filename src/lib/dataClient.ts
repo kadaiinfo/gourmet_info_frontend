@@ -11,7 +11,6 @@ type CafeDataFromAPI = {
     lng: number
     caption?: string | null
     media_url?: string | null
-    thumbnail_url?: string | null
     permalink?: string | null
     username?: string | null
     media_type?: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM" | string
@@ -51,7 +50,6 @@ export type DetailedCafe = {
     address?: string | null
     caption?: string | null
     media_url?: string | null
-    thumbnail_url?: string | null
     permalink?: string | null
     embed_html?: string | null
     username?: string | null
