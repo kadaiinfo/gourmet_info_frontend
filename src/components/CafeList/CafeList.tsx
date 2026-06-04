@@ -71,7 +71,7 @@ export default function CafeList({ onCafeSelect, onClose, cafes: cafesProp }: Ca
 
       <div className="cafe-list__body">
         <div className="cafe-list__count">
-          {filteredCafes.length}件のカフェ
+          {filteredCafes.length}件の飲食店
         </div>
 
         <div className="cafe-list__items">

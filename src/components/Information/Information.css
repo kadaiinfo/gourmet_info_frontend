@@ -271,9 +271,9 @@
 
 @media (max-width: 768px) {
   .info__detail .info__close {
-    font-size: 24px;
-    width: 36px;
-    height: 36px;
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
     position: static;
   }
 }
