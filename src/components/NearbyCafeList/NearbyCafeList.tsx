@@ -68,7 +68,7 @@ export default function NearbyCafeList({ onCafeSelect, onClose, cafes: cafesProp
         setNearbyCafes(nearby)
       } catch (error) {
         console.error('Failed to load nearby cafes:', error)
-        setError(error instanceof Error ? error.message : '近くのカフェの取得に失敗しました')
+        setError(error instanceof Error ? error.message : '近くの飲食店の取得に失敗しました')
       } finally {
         setLoading(false)
       }

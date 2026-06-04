@@ -259,6 +259,7 @@ export default function MapView() {
           onCafeSelect={handleCafeSelect}
           onClose={() => setShowFavorites(false)}
           cafes={favoriteCafes}
+          countNoun="お気に入りの飲食店"
         />
       )}
     </div>

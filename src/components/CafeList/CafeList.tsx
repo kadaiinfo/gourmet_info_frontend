@@ -8,9 +8,11 @@ interface CafeListProps {
   onCafeSelect: (cafe: Cafe) => void
   onClose: () => void
   cafes?: Cafe[]
+  // 件数表示の名詞（例: "飲食店" / "お気に入りの飲食店"）
+  countNoun?: string
 }
 
-export default function CafeList({ onCafeSelect, onClose, cafes: cafesProp }: CafeListProps) {
+export default function CafeList({ onCafeSelect, onClose, cafes: cafesProp, countNoun = "飲食店" }: CafeListProps) {
   const [allCafes, setAllCafes] = useState<Cafe[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -71,7 +73,7 @@ export default function CafeList({ onCafeSelect, onClose, cafes: cafesProp }: Ca
 
       <div className="cafe-list__body">
         <div className="cafe-list__count">
-          {filteredCafes.length}件の飲食店
+          {filteredCafes.length}件の{countNoun}
         </div>
 
         <div className="cafe-list__items">

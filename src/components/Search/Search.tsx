@@ -204,7 +204,7 @@ export default function Search({
               type="button"
               onClick={onOpenNowToggle}
               className={`genre-tag${isOpenNowActive ? ' active' : ''}`}
-              aria-label="今開いているお店を絞り込む"
+              aria-label="今開いている飲食店を絞り込む"
             >
               今開いてる！
             </button>

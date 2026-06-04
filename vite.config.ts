@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.jpg', 'logo_fill.svg'],
       manifest: {
-        name: 'Cafe Map - 鹿児島ご飯屋さんマップ',
-        short_name: 'Cafe Map',
-        description: '鹿児島のご飯屋さんを地図で探せるアプリ',
+        name: 'グルメインフォ - 鹿児島飲食店マップ',
+        short_name: 'グルメインフォ',
+        description: '鹿児島の飲食店を地図で探せるアプリ',
         theme_color: '#000000',
         background_color: '#f0ede4',
         display: 'standalone',
