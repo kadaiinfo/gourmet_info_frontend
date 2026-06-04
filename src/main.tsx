@@ -26,6 +26,11 @@ createRoot(document.getElementById('root')!).render(
           fontFamily: '"Noto Sans JP", sans-serif',
           borderRadius: '10px',
         },
+        elements: {
+          // タイトル(「KADAI INFOにサインイン」)は残し、
+          // サブタイトル(「お帰りなさい！続行するにはサインインしてください」)のみ非表示
+          headerSubtitle: { display: 'none' },
+        },
       }}
     >
       <App />
