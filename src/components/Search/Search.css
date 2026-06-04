@@ -221,6 +221,48 @@
   height: 30px;
 }
 
+/* お気に入り一覧ボタン */
+.favorites-button {
+  width: 50px;
+  height: 50px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+  background-color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.favorites-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(112, 82, 62, 0.25);
+}
+
+/* ログインボタン */
+.login-button {
+  height: 50px;
+  padding: 0 18px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 25px;
+  background-color: #70523E;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Noto Sans JP", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.login-button:hover {
+  background-color: #5c4332;
+}
+
 @media (max-width: 768px) {
   .settings-button {
     width: 48px;

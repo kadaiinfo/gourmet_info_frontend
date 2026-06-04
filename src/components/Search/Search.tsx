@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react"
 import "./Search.css"
 // import iconImage from "./icon.jpg"
 import mixerIcon from "./mixer.svg"
@@ -21,6 +22,7 @@ interface SearchProps {
   onGenreSelect?: (genreId: GenreId) => void
   onInputFocus?: () => void
   onInputBlur?: () => void
+  onFavoritesClick?: () => void
 }
 
 export default function Search({
@@ -36,7 +38,8 @@ export default function Search({
   selectedGenre,
   onGenreSelect,
   onInputFocus,
-  onInputBlur
+  onInputBlur,
+  onFavoritesClick
 }: SearchProps) {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<Cafe[]>([])
@@ -194,6 +197,29 @@ export default function Search({
               <img src="/location.png" alt="現在地" className="location-icon" />
             </button>
           )}
+          {onFavoritesClick && (
+            <button
+              type="button"
+              onClick={onFavoritesClick}
+              className="favorites-button"
+              aria-label="お気に入り一覧"
+              title="お気に入り一覧"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#4B4B4B" stroke="#4B4B4B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </button>
+          )}
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button type="button" className="login-button" aria-label="ログイン">
+                ログイン
+              </button>
+            </SignInButton>
+          </SignedOut>
         </div>
       </form>
 

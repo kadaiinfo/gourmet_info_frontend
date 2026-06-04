@@ -33,7 +33,14 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,json}'],
+        // /api/* は SPA フォールバック対象外（お気に入りAPI等を SW にキャッシュ/横取りさせない）
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
+          {
+            // ユーザー固有のお気に入りAPIは常にネットワーク（キャッシュしない）
+            urlPattern: /^\/api\/favorites/,
+            handler: 'NetworkOnly'
+          },
           {
             urlPattern: /^https:\/\/[^/]*cdninstagram\.com\//i,
             handler: 'StaleWhileRevalidate',

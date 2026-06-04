@@ -392,6 +392,42 @@
   font-family: "Noto Sans JP", sans-serif;
 }
 
+/* お気に入り（保存）ボタン */
+.info__favorite-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 18px;
+  border: 1.5px solid #70523E;
+  border-radius: 24px;
+  background: #fff;
+  color: #70523E;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Noto Sans JP", sans-serif;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.info__favorite-button svg {
+  flex-shrink: 0;
+}
+
+.info__favorite-button.is-active {
+  background: #70523E;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .info__favorite-button {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 18px;
+    font-size: 16px;
+  }
+}
+
 /* cafe.caption */
 .info__caption {
   color: #000;

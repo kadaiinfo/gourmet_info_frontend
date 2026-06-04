@@ -18,9 +18,11 @@ type InformationProps = {
     cafe: Cafe
     onClose?: () => void
     expandTrigger?: number
+    isFavorite?: boolean
+    onToggleFavorite?: () => void
 }
 
-export default function Information({ cafe, onClose, expandTrigger = 0 }: InformationProps) {
+export default function Information({ cafe, onClose, expandTrigger = 0, isFavorite = false, onToggleFavorite }: InformationProps) {
     const [detailedCafe, setDetailedCafe] = useState<DetailedCafe | null>(null)
     const [isExpanded, setIsExpanded] = useState(false)
     const [isClosing, setIsClosing] = useState(false)
@@ -331,6 +333,22 @@ export default function Information({ cafe, onClose, expandTrigger = 0 }: Inform
                                 </div>
 
                             </dl>
+
+                            {onToggleFavorite && (
+                                <button
+                                    type="button"
+                                    className={`info__favorite-button${isFavorite ? " is-active" : ""}`}
+                                    onClick={onToggleFavorite}
+                                    aria-pressed={isFavorite}
+                                    aria-label={isFavorite ? "お気に入りから削除" : "お気に入りに保存"}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                    {isFavorite ? "お気に入り済み" : "お気に入りに保存"}
+                                </button>
+                            )}
+
                             <p className="info__note">
                                 ※上記は取材時の情報に基づきます。正確な情報は店舗に直接お問い合わせください。
                                 {detailedCafe?.timestamp && (

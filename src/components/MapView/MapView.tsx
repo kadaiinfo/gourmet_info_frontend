@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { useClerk } from "@clerk/clerk-react"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import "./MapView.css"
@@ -17,6 +18,7 @@ import { GENRES, matchesGenre } from "../../utils/genreFilter"
 import { getCafesInArea } from "./utils/visibleCafes"
 
 import { DEFAULT_ZOOM_LEVEL, ZOOM_THRESHOLD } from "./constants"
+import { useFavorites } from "../../hooks/useFavorites"
 import { useCafeData } from "./hooks/useCafeData"
 import { useFilters } from "./hooks/useFilters"
 import { useKeyboardAvoidance } from "./hooks/useKeyboardAvoidance"
@@ -35,9 +37,20 @@ export default function MapView() {
   const [showMixerPanel, setShowMixerPanel] = useState(false)
   const [showCafeList, setShowCafeList] = useState(false)
   const [showNearbyCafeList, setShowNearbyCafeList] = useState(false)
+  const [showFavorites, setShowFavorites] = useState(false)
 
   // データ・フィルター
   const { allCafes, cafeDataLoaded } = useCafeData()
+
+  // お気に入り（Clerk認証 + D1保存）
+  const { openSignIn } = useClerk()
+  const { isFavorite, toggleFavorite, favoriteIds } = useFavorites({
+    onRequireSignIn: () => openSignIn(),
+  })
+  const favoriteCafes = useMemo(
+    () => allCafes.filter((c) => favoriteIds.has(c.id)),
+    [allCafes, favoriteIds]
+  )
   const {
     filterOpenNow,
     selectedGenre,
@@ -177,6 +190,7 @@ export default function MapView() {
         onGenreSelect={toggleGenre}
         onInputFocus={handleInputFocus}
         onInputBlur={handleInputBlur}
+        onFavoritesClick={() => setShowFavorites(true)}
       />
 
       <div ref={mapContainerRef} className="map-container" />
@@ -200,6 +214,8 @@ export default function MapView() {
           cafe={selected}
           onClose={() => setSelected(null)}
           expandTrigger={expandTrigger}
+          isFavorite={isFavorite(selected.id)}
+          onToggleFavorite={() => toggleFavorite(selected.id)}
         />
       )}
 
@@ -234,6 +250,14 @@ export default function MapView() {
           onCafeSelect={handleCafeSelect}
           onClose={() => setShowNearbyCafeList(false)}
           cafes={filterOpenNow ? filteredCafes : undefined}
+        />
+      )}
+
+      {showFavorites && (
+        <CafeList
+          onCafeSelect={handleCafeSelect}
+          onClose={() => setShowFavorites(false)}
+          cafes={favoriteCafes}
         />
       )}
     </div>

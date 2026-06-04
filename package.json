@@ -11,6 +11,9 @@
     "fetch-ogp": "node scripts/fetch-ogp.js"
   },
   "dependencies": {
+    "@clerk/backend": "^3.5.0",
+    "@clerk/clerk-react": "^5.61.8",
+    "@clerk/localizations": "^4.7.1",
     "maplibre-gl": "^5.6.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
@@ -31,6 +34,7 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "wrangler": "^4.97.0"
   }
 }

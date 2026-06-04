@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Cloudflare / wrangler
+.dev.vars
+.wrangler/
+# ローカル専用。本番のバインディングはダッシュボードで設定するためコミットしない
+wrangler.toml
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
