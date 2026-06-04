@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useClerk } from "@clerk/clerk-react"
+import { useAuth, useClerk } from "@clerk/clerk-react"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import "./MapView.css"
@@ -23,7 +23,6 @@ import { useCafeData } from "./hooks/useCafeData"
 import { useFilters } from "./hooks/useFilters"
 import { useKeyboardAvoidance } from "./hooks/useKeyboardAvoidance"
 import { useMapInstance } from "./hooks/useMapInstance"
-import { useGeolocation } from "./hooks/useGeolocation"
 import { useMarkerSync } from "./hooks/useMarkerSync"
 import { usePopup } from "./hooks/usePopup"
 
@@ -44,9 +43,19 @@ export default function MapView() {
 
   // お気に入り（Clerk認証 + D1保存）
   const { openSignIn } = useClerk()
+  const { isSignedIn } = useAuth()
   const { isFavorite, toggleFavorite, favoriteIds } = useFavorites({
     onRequireSignIn: () => openSignIn(),
   })
+
+  // ブックマーク一覧: 未ログインならログインへ誘導
+  const handleFavoritesClick = () => {
+    if (isSignedIn) {
+      setShowFavorites(true)
+    } else {
+      openSignIn()
+    }
+  }
   const favoriteCafes = useMemo(
     () => allCafes.filter((c) => favoriteIds.has(c.id)),
     [allCafes, favoriteIds]
@@ -71,12 +80,6 @@ export default function MapView() {
     mapRef,
     isKeyboardOpenRef,
     onBackgroundClick: () => setSelected(null),
-  })
-
-  // 現在地
-  const { isLocating, handleLocationClick } = useGeolocation({
-    mapRef,
-    defaultZoom: DEFAULT_ZOOM_LEVEL,
   })
 
   // マーカー同期
@@ -179,8 +182,6 @@ export default function MapView() {
       <Search
         onSearch={handleSearchAction}
         onSettingsClick={() => setShowMixerPanel(true)}
-        onLocationClick={handleLocationClick}
-        isLocating={isLocating}
         cafes={filteredCafes}
         onSuggestionSelect={handleCafeSelect}
         onOpenNowToggle={toggleOpenNow}
@@ -190,7 +191,7 @@ export default function MapView() {
         onGenreSelect={toggleGenre}
         onInputFocus={handleInputFocus}
         onInputBlur={handleInputBlur}
-        onFavoritesClick={() => setShowFavorites(true)}
+        onFavoritesClick={handleFavoritesClick}
       />
 
       <div ref={mapContainerRef} className="map-container" />

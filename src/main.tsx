@@ -16,6 +16,10 @@ createRoot(document.getElementById('root')!).render(
     <ClerkProvider
       publishableKey={PUBLISHABLE_KEY}
       localization={jaJP}
+      // Clerkの内部遷移(ログアウト後の/への遷移等)をクライアントサイド化し、
+      // ページ全体のリロードを回避する
+      routerPush={(to) => window.history.pushState({}, "", to)}
+      routerReplace={(to) => window.history.replaceState({}, "", to)}
       appearance={{
         variables: {
           colorPrimary: '#70523E',

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react"
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react"
 import "./Search.css"
 // import iconImage from "./icon.jpg"
 import mixerIcon from "./mixer.svg"
@@ -11,8 +10,6 @@ import { type GenreId } from "../../utils/genreFilter"
 interface SearchProps {
   onSearch: (query: string) => void
   onSettingsClick?: () => void
-  onLocationClick?: () => void
-  isLocating?: boolean
   cafes?: Cafe[]
   onSuggestionSelect?: (cafe: Cafe) => void
   onOpenNowToggle?: () => void
@@ -28,8 +25,6 @@ interface SearchProps {
 export default function Search({
   onSearch,
   onSettingsClick,
-  onLocationClick,
-  isLocating,
   cafes = [],
   onSuggestionSelect,
   onOpenNowToggle,
@@ -185,18 +180,6 @@ export default function Search({
               <img src={mixerIcon} alt="設定" className="settings-icon" />
             </button>
           )}
-          {onLocationClick && (
-            <button
-              type="button"
-              onClick={onLocationClick}
-              disabled={isLocating}
-              className="location-button-search"
-              aria-label="現在地を表示"
-              title="現在地を表示"
-            >
-              <img src="/location.png" alt="現在地" className="location-icon" />
-            </button>
-          )}
           {onFavoritesClick && (
             <button
               type="button"
@@ -210,16 +193,6 @@ export default function Search({
               </svg>
             </button>
           )}
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button type="button" className="login-button" aria-label="ログイン">
-                ログイン
-              </button>
-            </SignInButton>
-          </SignedOut>
         </div>
       </form>
 

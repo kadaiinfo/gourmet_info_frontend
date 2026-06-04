@@ -1,3 +1,4 @@
+import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton, useUser } from "@clerk/clerk-react"
 import "./MixerPanel.css"
 import { type GenreId } from "../../utils/genreFilter"
 
@@ -12,6 +13,7 @@ interface MixerPanelProps {
 }
 
 export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onShowNearbyCafes, genres, selectedGenre, onGenreSelect }: MixerPanelProps) {
+  const { user } = useUser()
 
   const areas = [
     { id: "uptown", name: "騎射場", lng: 130.5520733, lat: 31.5692252 },
@@ -37,6 +39,42 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
         >
           ×
         </button>
+      </div>
+
+      {/* アカウントセクション */}
+      <div className="mixer-panel__section">
+        <SignedOut>
+          <SignInButton mode="modal">
+            <button className="mixer-panel__auth-button" type="button">
+              ログイン
+            </button>
+          </SignInButton>
+        </SignedOut>
+        <SignedIn>
+          <div className="mixer-panel__account">
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: { width: "48px", height: "48px" },
+                },
+              }}
+            />
+            <div className="mixer-panel__account-info">
+              <span className="mixer-panel__account-email">
+                {user?.primaryEmailAddress?.emailAddress}
+              </span>
+              <span className="mixer-panel__account-name">
+                {user?.fullName ?? user?.username}
+              </span>
+            </div>
+            <SignOutButton>
+              <button className="mixer-panel__genre-button mixer-panel__logout-button" type="button">
+                ログアウト
+              </button>
+            </SignOutButton>
+          </div>
+        </SignedIn>
       </div>
 
       {/* 表示オプションセクション */}
