@@ -282,28 +282,19 @@
   text-overflow: ellipsis;
 }
 
-/* アカウント行内ではログアウトはコンパクトに右寄せ */
-.mixer-panel__account .mixer-panel__logout-button {
+/* 未ログイン時の灰色プレースホルダーアイコン */
+.mixer-panel__avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #d9d9d9;
+  flex: 0 0 auto;
+}
+
+/* アカウント行内ではログイン/ログアウトはコンパクトに右寄せ */
+.mixer-panel__account .mixer-panel__account-action {
   flex: 0 0 auto;
   margin-left: auto;
-}
-
-.mixer-panel__auth-button {
-  flex: 1;
-  padding: 12px 16px;
-  background: #70523E;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: "Noto Sans JP", sans-serif;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mixer-panel__auth-button:hover {
-  background: #5c4332;
 }
 
 .mixer-panel__option-button:focus,

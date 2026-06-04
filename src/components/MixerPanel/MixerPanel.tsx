@@ -43,12 +43,16 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
 
       {/* アカウントセクション */}
       <div className="mixer-panel__section">
+        <h3 className="mixer-panel__section-title">ユーザー情報</h3>
         <SignedOut>
-          <SignInButton mode="modal">
-            <button className="mixer-panel__auth-button" type="button">
-              ログイン
-            </button>
-          </SignInButton>
+          <div className="mixer-panel__account">
+            <div className="mixer-panel__avatar-placeholder" />
+            <SignInButton mode="modal">
+              <button className="mixer-panel__genre-button" type="button">
+                ログイン
+              </button>
+            </SignInButton>
+          </div>
         </SignedOut>
         <SignedIn>
           <div className="mixer-panel__account">
@@ -69,7 +73,7 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
               </span>
             </div>
             <SignOutButton>
-              <button className="mixer-panel__genre-button mixer-panel__logout-button" type="button">
+              <button className="mixer-panel__genre-button mixer-panel__account-action" type="button">
                 ログアウト
               </button>
             </SignOutButton>
