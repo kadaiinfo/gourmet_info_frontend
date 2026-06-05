@@ -258,6 +258,57 @@
   gap: 12px;
 }
 
+/* お気に入り（横スクロール） */
+.mixer-panel__favorites-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mixer-panel__favorite-card {
+  flex: 0 0 auto;
+  width: 120px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  font-family: "Noto Sans JP", sans-serif;
+  transition: box-shadow 0.2s ease;
+}
+
+.mixer-panel__favorite-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.mixer-panel__favorite-thumb {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  display: block;
+}
+
+.mixer-panel__favorite-name {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mixer-panel__favorites-empty {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  font-family: "Noto Sans JP", sans-serif;
+}
+
 /* アイコン右側の情報（メール上・名前下） */
 .mixer-panel__account-info {
   display: flex;

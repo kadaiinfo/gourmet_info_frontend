@@ -235,6 +235,11 @@ export default function MapView() {
           genres={GENRES}
           selectedGenre={selectedGenre}
           onGenreSelect={toggleGenre}
+          favoriteCafes={favoriteCafes}
+          onFavoriteSelect={(cafe) => {
+            setShowMixerPanel(false)
+            handleCafeSelect(cafe)
+          }}
         />
       )}
 

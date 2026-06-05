@@ -1,5 +1,6 @@
 import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton, useUser } from "@clerk/clerk-react"
 import "./MixerPanel.css"
+import { type Cafe } from "../../lib/dataClient"
 import { type GenreId } from "../../utils/genreFilter"
 
 interface MixerPanelProps {
@@ -10,9 +11,11 @@ interface MixerPanelProps {
   genres?: readonly { id: GenreId; label: string }[]
   selectedGenre?: GenreId[]
   onGenreSelect?: (genreId: GenreId) => void
+  favoriteCafes?: Cafe[]
+  onFavoriteSelect?: (cafe: Cafe) => void
 }
 
-export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onShowNearbyCafes, genres, selectedGenre, onGenreSelect }: MixerPanelProps) {
+export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onShowNearbyCafes, genres, selectedGenre, onGenreSelect, favoriteCafes = [], onFavoriteSelect }: MixerPanelProps) {
   const { user } = useUser()
 
   const areas = [
@@ -80,6 +83,39 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
           </div>
         </SignedIn>
       </div>
+
+      {/* お気に入りセクション（ログイン時のみ） */}
+      <SignedIn>
+        <div className="mixer-panel__section">
+          <h3 className="mixer-panel__section-title">あなたのお気に入りの飲食店</h3>
+          {favoriteCafes.length > 0 ? (
+            <div className="mixer-panel__favorites-scroll">
+              {favoriteCafes.map((cafe) => (
+                <button
+                  key={cafe.id}
+                  className="mixer-panel__favorite-card"
+                  onClick={() => onFavoriteSelect?.(cafe)}
+                >
+                  {cafe.media_url && (
+                    <img
+                      src={cafe.media_url}
+                      alt={cafe.store_name ?? ""}
+                      className="mixer-panel__favorite-thumb"
+                      loading="lazy"
+                      onError={(e) => {
+                        ;(e.currentTarget as HTMLImageElement).style.display = "none"
+                      }}
+                    />
+                  )}
+                  <div className="mixer-panel__favorite-name">{cafe.store_name ?? "—"}</div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="mixer-panel__favorites-empty">まだお気に入りがありません</p>
+          )}
+        </div>
+      </SignedIn>
 
       {/* 表示オプションセクション */}
       <div className="mixer-panel__section">
