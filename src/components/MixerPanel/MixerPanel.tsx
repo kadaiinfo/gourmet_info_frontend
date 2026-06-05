@@ -87,7 +87,7 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
       {/* お気に入りセクション（ログイン時のみ） */}
       <SignedIn>
         <div className="mixer-panel__section">
-          <h3 className="mixer-panel__section-title">あなたのお気に入りの飲食店</h3>
+          <h3 className="mixer-panel__section-title">お気に入りの飲食店</h3>
           {favoriteCafes.length > 0 ? (
             <div className="mixer-panel__favorites-scroll">
               {favoriteCafes.map((cafe) => (
