@@ -107,7 +107,6 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
                       }}
                     />
                   )}
-                  <div className="mixer-panel__favorite-name">{cafe.store_name ?? "—"}</div>
                 </button>
               ))}
             </div>
