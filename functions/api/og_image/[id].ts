@@ -5,7 +5,7 @@ import { getPublishedStores, type StoresEnv } from "../../_lib/stores"
 // OGP用の店舗サムネイル。Instagram CDN の media_url は有効期限があり
 // SNSクローラーが直接参照すると期限切れで画像が出ないことがあるため、
 // 自ドメインの安定したURLでプロキシする（KV上の最新 media_url を都度参照）。
-export const onRequestGet: PagesFunction<StoresEnv> = async (ctx) => {
+const handleRequest: PagesFunction<StoresEnv> = async (ctx) => {
   const rawId = String(ctx.params.id ?? "")
   let id: string
   try {
@@ -37,3 +37,8 @@ export const onRequestGet: PagesFunction<StoresEnv> = async (ctx) => {
     return fallback()
   }
 }
+
+export const onRequestGet = handleRequest
+// HEAD で事前確認してくるクローラーが SPA フォールバック(text/html)を
+// 受け取らないよう、HEAD も同じハンドラで処理する（ボディはランタイムが落とす）
+export const onRequestHead = handleRequest
