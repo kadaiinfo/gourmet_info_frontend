@@ -45,8 +45,8 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
   const name = store.store_name ?? SITE_NAME
   const title = `${name} | ${SITE_NAME}`
-  // カードの説明文は基本情報（住所）＋サイトの一言。
-  // 営業時間は複数行でカードに収まらず、categories は英語ラベルのため使わない。
+  // 共有カードは写真＋タイトルのみのシンプルな見た目にするため og:description は出さない。
+  // meta description はカードには表示されず Google の検索結果にだけ使われるので残す。
   const description = [store.address, "鹿大生が紹介する鹿児島グルメ"]
     .filter(Boolean)
     .join(" | ")
@@ -86,7 +86,11 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     })
     .on('meta[name="description"]', setContent(description))
     .on('meta[property="og:title"]', setContent(title))
-    .on('meta[property="og:description"]', setContent(description))
+    .on('meta[property="og:description"]', {
+      element(el) {
+        el.remove()
+      },
+    })
     .on('meta[property="og:url"]', setContent(canonical))
     .on('meta[property="og:image"]', setContent(ogImage))
     .on('meta[name="twitter:image"]', setContent(ogImage))
