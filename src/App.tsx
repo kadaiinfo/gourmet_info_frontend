@@ -4,6 +4,7 @@ import SwipeDeck from './components/SwipeDeck/SwipeDeck.tsx'
 import { useCafeData } from './components/MapView/hooks/useCafeData.ts'
 import { usePendingFavorites } from './hooks/usePendingFavorites.ts'
 import { useIsMobile } from './hooks/useIsMobile.ts'
+import { getStoreIdFromPath } from './lib/storeRoute.ts'
 
 // スワイプの自動起動は「初回のみ」。localStorage にフラグを残して2回目以降は出さない。
 const SWIPE_SEEN_KEY = 'swipeOnboardingSeen'
@@ -27,8 +28,11 @@ function markSwipeSeen() {
 function App() {
   // スワイプデッキはスマホのみ。PC は最初からマップ表示。
   // さらに初回訪問時のみ自動起動（2回目以降はマップ表示で、ブックマークボタンから手動起動）。
+  // 共有リンク（/store/:id）から来た場合はスワイプを出さず、まず店舗詳細を見せる。
   const isMobile = useIsMobile()
-  const [showDeck, setShowDeck] = useState(() => isMobile && !hasSeenSwipe())
+  const [showDeck, setShowDeck] = useState(
+    () => isMobile && !hasSeenSwipe() && getStoreIdFromPath(window.location.pathname) === null
+  )
 
   const { allCafes, cafeDataLoaded } = useCafeData()
   const { add: addPending } = usePendingFavorites()

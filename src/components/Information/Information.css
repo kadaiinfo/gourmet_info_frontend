@@ -434,6 +434,40 @@
   }
 }
 
+/* 共有ボタン：お気に入りボタンと同系の見た目 */
+.info__share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1.5px solid #70523E;
+  border-radius: 24px;
+  background: #fff;
+  color: #70523E;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Noto Sans JP", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.info__share-button svg {
+  flex-shrink: 0;
+}
+
+.info__share-button:hover {
+  background: #f5f0ec;
+}
+
+@media (max-width: 768px) {
+  .info__share-button {
+    font-size: 11px;
+    padding: 6px 12px;
+    gap: 5px;
+  }
+}
+
 /* cafe.caption */
 .info__caption {
   color: #000;

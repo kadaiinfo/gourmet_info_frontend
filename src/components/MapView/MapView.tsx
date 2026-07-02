@@ -25,6 +25,7 @@ import { useKeyboardAvoidance } from "./hooks/useKeyboardAvoidance"
 import { useMapInstance } from "./hooks/useMapInstance"
 import { useMarkerSync } from "./hooks/useMarkerSync"
 import { usePopup } from "./hooks/usePopup"
+import { useStoreRoute } from "./hooks/useStoreRoute"
 
 interface MapViewProps {
   // スマホ版のみ指定。検索バー横のブックマークボタンでスワイプモードを開く
@@ -116,6 +117,16 @@ export default function MapView({ onOpenSwipe }: MapViewProps) {
     }
     handleCafeSelection(cafe, mapRef.current, setSelected)
   }
+
+  // URL(/store/:id) と選択中の店舗を同期（共有リンク・ディープリンク対応）
+  useStoreRoute({
+    allCafes,
+    cafeDataLoaded,
+    mapLoaded,
+    selected,
+    onOpenCafe: handleCafeSelect,
+    onCloseCafe: () => setSelected(null),
+  })
 
   const handleAreaSelect = (lng: number, lat: number) => {
     setSelected(null)
