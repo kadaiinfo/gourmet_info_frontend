@@ -45,11 +45,11 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 
   const name = store.store_name ?? SITE_NAME
   const title = `${name} | ${SITE_NAME}`
-  const details = [
-    store.address ? `住所: ${store.address}` : null,
-    store.categories?.length ? `ジャンル: ${store.categories.join("・")}` : null,
-  ].filter(Boolean)
-  const description = `鹿児島の「${name}」を地図でチェック。${details.length ? `${details.join(" / ")}。` : ""}鹿大生が紹介する鹿児島グルメ。`
+  // カードの説明文は基本情報（住所）＋サイトの一言。
+  // 営業時間は複数行でカードに収まらず、categories は英語ラベルのため使わない。
+  const description = [store.address, "鹿大生が紹介する鹿児島グルメ"]
+    .filter(Boolean)
+    .join(" | ")
   // Instagram CDN の URL は有効期限があるため、自ドメインのプロキシ(/api/og_image/:id)を
   // og:image に使う（クローラーがいつ取得しても安定して画像を返せる）
   const ogImage = store.media_url
