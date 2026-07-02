@@ -50,7 +50,11 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     store.categories?.length ? `ジャンル: ${store.categories.join("・")}` : null,
   ].filter(Boolean)
   const description = `鹿児島の「${name}」を地図でチェック。${details.length ? `${details.join(" / ")}。` : ""}鹿大生が紹介する鹿児島グルメ。`
-  const ogImage = store.media_url || DEFAULT_OG_IMAGE
+  // Instagram CDN の URL は有効期限があるため、自ドメインのプロキシ(/api/og_image/:id)を
+  // og:image に使う（クローラーがいつ取得しても安定して画像を返せる）
+  const ogImage = store.media_url
+    ? `${SITE_ORIGIN}/api/og_image/${encodeURIComponent(store.id)}`
+    : DEFAULT_OG_IMAGE
   const canonical = storeUrl(store.id)
 
   const jsonLd = {
