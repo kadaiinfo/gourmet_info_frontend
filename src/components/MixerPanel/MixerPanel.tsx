@@ -6,6 +6,7 @@ import { type GenreId } from "../../utils/genreFilter"
 interface MixerPanelProps {
   onClose: () => void
   onShowCafeList: () => void
+  onShowFavoritesList: () => void
   onAreaSelect: (lng: number, lat: number) => void
   onShowNearbyCafes: () => void
   genres?: readonly { id: GenreId; label: string }[]
@@ -15,7 +16,7 @@ interface MixerPanelProps {
   onFavoriteSelect?: (cafe: Cafe) => void
 }
 
-export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onShowNearbyCafes, genres, selectedGenre, onGenreSelect, favoriteCafes = [], onFavoriteSelect }: MixerPanelProps) {
+export default function MixerPanel({ onClose, onShowCafeList, onShowFavoritesList, onAreaSelect, onShowNearbyCafes, genres, selectedGenre, onGenreSelect, favoriteCafes = [], onFavoriteSelect }: MixerPanelProps) {
   const { user } = useUser()
 
   const areas = [
@@ -125,6 +126,16 @@ export default function MixerPanel({ onClose, onShowCafeList, onAreaSelect, onSh
             <div className="mixer-panel__option-content">
               <div className="mixer-panel__option-title">一覧表示</div>
               <div className="mixer-panel__option-desc">飲食店を一覧で表示</div>
+            </div>
+          </button>
+
+          <button
+            className="mixer-panel__option-button"
+            onClick={onShowFavoritesList}
+          >
+            <div className="mixer-panel__option-content">
+              <div className="mixer-panel__option-title">お気に入りを一覧表示</div>
+              <div className="mixer-panel__option-desc">保存した飲食店を一覧で表示</div>
             </div>
           </button>
 

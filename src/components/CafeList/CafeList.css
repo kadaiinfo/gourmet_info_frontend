@@ -143,6 +143,33 @@
   flex-direction: column;
   cursor: pointer;
   transition: opacity 0.2s ease;
+  position: relative;
+}
+
+/* お気に入り解除ボタン（画像右上に重ねる） */
+.cafe-list__remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cafe-list__remove:hover {
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .cafe-list__item:hover {
