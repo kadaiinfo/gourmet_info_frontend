@@ -19,7 +19,7 @@ export type StoreRecord = {
   categories?: string[] | null
 }
 
-export const SITE_ORIGIN = "https://kadaiinfo-gourmet.com"
+export const SITE_ORIGIN = "https://gourmet.kadaiinfo.com"
 
 // 店舗詳細ページの正規URL（SPA 側 src/lib/storeRoute.ts と同じパス形式）
 export const storeUrl = (id: string) => `${SITE_ORIGIN}/store/${encodeURIComponent(id)}`
