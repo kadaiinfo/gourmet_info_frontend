@@ -26,7 +26,12 @@ import { useMapInstance } from "./hooks/useMapInstance"
 import { useMarkerSync } from "./hooks/useMarkerSync"
 import { usePopup } from "./hooks/usePopup"
 
-export default function MapView() {
+interface MapViewProps {
+  // スマホ版のみ指定。検索バー横のブックマークボタンでスワイプモードを開く
+  onOpenSwipe?: () => void
+}
+
+export default function MapView({ onOpenSwipe }: MapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const isKeyboardOpenRef = useRef(false)
@@ -44,12 +49,18 @@ export default function MapView() {
   // お気に入り（Clerk認証 + D1保存）
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
-  const { isFavorite, toggleFavorite, favoriteIds } = useFavorites({
+  const { isFavorite, toggleFavorite, removeFavorite, favoriteIds } = useFavorites({
     onRequireSignIn: () => openSignIn(),
   })
 
-  // ブックマーク一覧: 未ログインならログインへ誘導
+  // 検索バー横のブックマークボタン。
+  // スマホ版（onOpenSwipe あり）はスワイプモードを開く。
+  // それ以外（PC）は従来どおりお気に入り一覧を開く（未ログインならログインへ誘導）。
   const handleFavoritesClick = () => {
+    if (onOpenSwipe) {
+      onOpenSwipe()
+      return
+    }
     if (isSignedIn) {
       setShowFavorites(true)
     } else {
@@ -191,7 +202,7 @@ export default function MapView() {
         onGenreSelect={toggleGenre}
         onInputFocus={handleInputFocus}
         onInputBlur={handleInputBlur}
-        onFavoritesClick={handleFavoritesClick}
+        onFavoritesClick={onOpenSwipe ? handleFavoritesClick : undefined}
       />
 
       <div ref={mapContainerRef} className="map-container" />
@@ -226,6 +237,11 @@ export default function MapView() {
           onShowCafeList={() => {
             setShowMixerPanel(false)
             setShowCafeList(true)
+          }}
+          onShowFavoritesList={() => {
+            setShowMixerPanel(false)
+            // 未ログインでもそのままお気に入り一覧を表示する
+            setShowFavorites(true)
           }}
           onAreaSelect={handleAreaSelect}
           onShowNearbyCafes={() => {
@@ -265,6 +281,7 @@ export default function MapView() {
           onClose={() => setShowFavorites(false)}
           cafes={favoriteCafes}
           countNoun="お気に入りの飲食店"
+          onRemoveFavorite={removeFavorite}
         />
       )}
     </div>

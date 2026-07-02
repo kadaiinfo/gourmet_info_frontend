@@ -10,9 +10,11 @@ interface CafeListProps {
   cafes?: Cafe[]
   // 件数表示の名詞（例: "飲食店" / "お気に入りの飲食店"）
   countNoun?: string
+  // 指定時、各アイテムに「お気に入り解除」ボタンを表示する（お気に入り一覧用）
+  onRemoveFavorite?: (cafeId: string) => void
 }
 
-export default function CafeList({ onCafeSelect, onClose, cafes: cafesProp, countNoun = "飲食店" }: CafeListProps) {
+export default function CafeList({ onCafeSelect, onClose, cafes: cafesProp, countNoun = "飲食店", onRemoveFavorite }: CafeListProps) {
   const [allCafes, setAllCafes] = useState<Cafe[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -91,6 +93,20 @@ export default function CafeList({ onCafeSelect, onClose, cafes: cafesProp, coun
                   (e.currentTarget as HTMLImageElement).src = "/icon.jpg"
                 }}
               />
+              {onRemoveFavorite && (
+                <button
+                  type="button"
+                  className="cafe-list__remove"
+                  aria-label="お気に入りから外す"
+                  title="お気に入りから外す"
+                  onClick={(e) => {
+                    e.stopPropagation() // 店舗選択（カード遷移）を発火させない
+                    onRemoveFavorite(cafe.id)
+                  }}
+                >
+                  ×
+                </button>
+              )}
             </div>
           ))}
         </div>

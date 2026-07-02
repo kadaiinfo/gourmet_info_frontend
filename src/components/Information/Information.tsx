@@ -29,6 +29,8 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
     const [isMobile, setIsMobile] = useState(false)
     const [hasBeenExpanded, setHasBeenExpanded] = useState(false)
     const [isEmbedLoaded, setIsEmbedLoaded] = useState(false)
+    // 埋め込みが表示できない（年齢制限・削除・非公開など）時にサムネイルへフォールバック
+    const [embedFailed, setEmbedFailed] = useState(false)
     const [isScriptLoaded, setIsScriptLoaded] = useState(false)
     const infoDetailRef = useRef<HTMLDivElement>(null)
     const embedContainerRef = useRef<HTMLDivElement>(null)
@@ -109,6 +111,7 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
 
         if (permalink && isScriptLoaded && window.instgrm) {
             setIsEmbedLoaded(false) // 再処理開始時に未ロード状態にする
+            setEmbedFailed(false)
 
             // DOMの更新を待ってから処理
             requestAnimationFrame(() => {
@@ -121,40 +124,71 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
 
     // iframeの生成と読み込み完了を監視
     useEffect(() => {
+        const container = embedContainerRef.current
         const permalink = cafe.permalink || detailedCafe?.permalink
-        if (!embedContainerRef.current || !permalink) return
+        if (!container || !permalink) return
+
+        // 埋め込みが実際に表示できているかを高さで判定する下限値(px)。
+        // 年齢制限・削除・非公開などで中身が出ない場合、iframe が無い/極端に低いため
+        // これを下回ったらサムネイルへフォールバックする。
+        const MIN_EMBED_HEIGHT = 200
+
+        // 完了確定は一度だけ。load を取りこぼしても無限スピナーにしない。
+        let done = false
+        let evalTimer: ReturnType<typeof setTimeout> | undefined
+        const evaluateEmbed = () => {
+            const iframe = container.querySelector('iframe') as HTMLIFrameElement | null
+            // Instagram のリサイズ(postMessage)後に測るため、markLoaded から少し遅らせて呼ぶ
+            if (!iframe || iframe.offsetHeight < MIN_EMBED_HEIGHT) {
+                setEmbedFailed(true)
+            }
+        }
+        const markLoaded = () => {
+            if (done) return
+            done = true
+            setIsEmbedLoaded(true)
+            // 表示反映後に高さを見て、埋め込めていなければフォールバック
+            evalTimer = setTimeout(evaluateEmbed, 1200)
+        }
+
+        const watchIframe = (iframe: HTMLIFrameElement) => {
+            // load 監視に加え、既に読み込み済み（load 取りこぼし）にも備える
+            iframe.addEventListener('load', markLoaded)
+        }
+
+        // process() が先行して既に iframe を生成しているケースを拾う
+        // （隣のカードの process() で作られる等のレース対策）
+        const existing = container.querySelector('iframe')
+        if (existing) watchIframe(existing as HTMLIFrameElement)
 
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.addedNodes.length > 0) {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node.nodeName === 'IFRAME') {
-                            const iframe = node as HTMLIFrameElement
-
-                            // iframeのloadイベントを監視（コンテンツ読み込み完了を待つ）
-                            iframe.addEventListener('load', () => {
-                                // Instagram側のコンテンツ読み込み完了後に表示
-                                setIsEmbedLoaded(true)
-                            })
-
-                            observer.disconnect()
-                        }
-                    })
-                }
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeName === 'IFRAME') {
+                        watchIframe(node as HTMLIFrameElement)
+                        observer.disconnect()
+                    }
+                })
             })
         })
 
-        observer.observe(embedContainerRef.current, {
-            childList: true,
-            subtree: true
-        })
+        observer.observe(container, { childList: true, subtree: true })
 
-        return () => observer.disconnect()
+        // 保険: load を取りこぼしても一定時間で必ず表示に切り替える（無限スピナー防止）
+        const fallback = setTimeout(markLoaded, 4000)
+
+        return () => {
+            observer.disconnect()
+            clearTimeout(fallback)
+            if (evalTimer) clearTimeout(evalTimer)
+        }
     }, [cafe, detailedCafe])
 
     const imgSrc = detailedCafe
         ? detailedCafe.media_url ?? ""
         : cafe.media_url ?? ""
+
+    const permalink = cafe.permalink || detailedCafe?.permalink
 
     // 画面サイズを監視
     useEffect(() => {
@@ -254,10 +288,10 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
                 </div>
 
                 <div className="info__body">
-                    {/* Instagram埋め込み */}
-                    {(cafe.permalink || detailedCafe?.permalink) ? (
+                    {/* Instagram埋め込み。年齢制限・削除等で表示できない場合はサムネイルへフォールバック */}
+                    {permalink && !embedFailed ? (
                         <div
-                            key={cafe.permalink || detailedCafe?.permalink}
+                            key={permalink}
                             className="info__instagram-embed"
                             ref={embedContainerRef}
                         >
@@ -281,7 +315,7 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
                             <blockquote
                                 className="instagram-media"
                                 data-instgrm-captioned
-                                data-instgrm-permalink={cafe.permalink || detailedCafe?.permalink}
+                                data-instgrm-permalink={permalink}
                                 data-instgrm-version="14"
                                 style={{
                                     background: '#FFF',
@@ -298,6 +332,28 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
                             >
                             </blockquote>
                         </div>
+                    ) : permalink && embedFailed ? (
+                        // 埋め込みが表示できない投稿はサムネイル＋Instagramリンクで代替
+                        <a
+                            className="info__embed-fallback"
+                            href={permalink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {imgSrc ? (
+                                <img
+                                    className="info__embed-fallback-img"
+                                    src={imgSrc}
+                                    alt={cafe.store_name ?? "cafe"}
+                                    loading="lazy"
+                                    onError={(e) => {
+                                        ;(e.currentTarget as HTMLImageElement).src = "/icon.jpg"
+                                    }}
+                                />
+                            ) : (
+                                <div className="info__embed-fallback-noimg" />
+                            )}
+                        </a>
                     ) : imgSrc && (
                         <img
                             className="info__image"

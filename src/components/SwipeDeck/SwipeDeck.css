@@ -1,0 +1,162 @@
+.swipe-deck-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  /* 背景のマップを少しグレーに沈ませて透過（ぼかしなし） */
+  background: rgba(60, 60, 60, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+  /* スワイプは下部ボタンで行うため、カード内の縦スクロールを許可する */
+  touch-action: pan-y;
+}
+
+/* 非アクティブ時はマウントしたまま非表示にして一枚目を先読みする。
+   visibility:hidden なので描画されず、背面の地図も操作できる（クリックは透過）。
+   一方で内部の Instagram iframe は読み込まれるため、開いたときに即表示できる。 */
+.swipe-deck-overlay--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* カードの表示領域。下部はスワイプ用ボタンのスペースを空ける */
+.swipe-deck-stack {
+  position: fixed;
+  top: 20px;
+  left: 10px;
+  right: 10px;
+  bottom: 110px;
+  margin: 0;
+}
+
+/* react-tinder-card のラッパー（transform はライブラリが付与） */
+.swipe-card-tinder {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  /* スワイプはボタン操作。カード内の縦スクロールを許可する */
+  touch-action: pan-y;
+}
+
+.swipe-card {
+  position: absolute;
+  /* 表示領域（上端〜下部ボタンの直前）いっぱいに広げる */
+  inset: 0;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.swipe-card:active {
+  cursor: grabbing;
+}
+
+/* 店舗詳細（Information）を内包する縦スクロール領域。カード枠いっぱいに広げる */
+.swipe-card-detail {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  /* 指ドラッグでのスワイプは無効なので、ここでは縦スクロールを許可する */
+  touch-action: pan-y;
+}
+
+/* ---- カード内に埋め込んだ Information の固定配置を打ち消し、カードに収める ---- */
+.swipe-card-detail .info {
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  max-height: none !important;
+  height: auto !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  z-index: auto !important;
+}
+
+/* プレビュー（下部固定の簡易表示）は不要 */
+.swipe-card-detail .info__preview {
+  display: none !important;
+}
+
+/* 詳細は常時表示・静的配置（展開状態に依存させない） */
+.swipe-card-detail .info__detail {
+  display: block !important;
+  position: static !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  z-index: auto !important;
+  animation: none !important;
+}
+
+/* お気に入り/閉じる未使用時の空ヘッダーは隠す */
+.swipe-card-detail .info__header:empty {
+  display: none !important;
+}
+
+/* 下部のスワイプ操作ボタン（スルー／保存） */
+.swipe-deck-actions {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  z-index: 2100;
+}
+
+.swipe-deck-btn {
+  min-width: 120px;
+  padding: 14px 24px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.swipe-deck-btn:active {
+  transform: scale(0.96);
+}
+
+.swipe-deck-btn--skip {
+  background: #9a9a9a;
+}
+
+.swipe-deck-btn--save {
+  background: #6f4e37;
+}
+
+/* スルーの左の「×」ボタン（スワイプを終了してマップへ戻る）。色はスルーと同じ */
+.swipe-deck-btn--quit {
+  min-width: 0;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  line-height: 1;
+  background: #9a9a9a;
+}
+
