@@ -56,6 +56,8 @@ export default function SwipeDeck({ cafes, active, onLike, onFinish }: SwipeDeck
   const topCardRef = useRef<TinderCardHandle>(null)
   // アニメーション中の二重操作を防ぐ
   const actingRef = useRef(false)
+  // ボタン押下時のカード演出（カラーウォッシュ＋アイコン）。飛ばす方向を保持
+  const [stamp, setStamp] = useState<"left" | "right" | null>(null)
 
   // 左右スワイプ確定: 右ならお気に入り候補に追加。操作を専用イベントで計測。
   const handleSwipe = (cafe: Cafe, direction: "left" | "right") => {
@@ -83,13 +85,16 @@ export default function SwipeDeck({ cafes, active, onLike, onFinish }: SwipeDeck
   // カードが画面外へ消えたら次へ
   const handleLeftScreen = () => {
     actingRef.current = false
+    setStamp(null)
     setIndex((i) => i + 1)
   }
 
-  // 下部ボタンから最前面カードをスワイプさせる
+  // 下部ボタンから最前面カードをスワイプさせる。
+  // ウォッシュ演出とフライアウトを同時に開始する（飛びながらウォッシュが出る）
   const triggerSwipe = (direction: "left" | "right") => {
     if (actingRef.current) return // アニメーション中は無視
     actingRef.current = true
+    setStamp(direction)
     void topCardRef.current?.swipe(direction)
   }
 
@@ -122,35 +127,37 @@ export default function SwipeDeck({ cafes, active, onLike, onFinish }: SwipeDeck
               ref={i === index ? topCardRef : undefined}
               key={cafe.id}
               cafe={cafe}
+              stamp={i === index ? stamp : null}
               onSwipe={(dir) => handleSwipe(cafe, dir)}
               onLeftScreen={handleLeftScreen}
+              onQuit={onFinish}
             />
           ))}
       </div>
 
-      {/* スワイプは指ではなく、この下部ボタンで行う */}
+      {/* スワイプは指ではなく、この下部ボタンで行う。
+          アイコンはウォッシュ演出・お気に入りボタンと共通（×／ブックマーク） */}
       <div className="swipe-deck-actions">
-        <button
-          type="button"
-          className="swipe-deck-btn swipe-deck-btn--quit"
-          onClick={onFinish}
-          aria-label="終わる"
-        >
-          ×
-        </button>
         <button
           type="button"
           className="swipe-deck-btn swipe-deck-btn--skip"
           onClick={() => triggerSwipe("left")}
+          aria-label="スルー"
         >
-          スルー
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
         <button
           type="button"
           className="swipe-deck-btn swipe-deck-btn--save"
           onClick={() => triggerSwipe("right")}
+          aria-label="保存"
         >
-          保存
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
         </button>
       </div>
     </div>

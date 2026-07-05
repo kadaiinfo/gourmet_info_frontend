@@ -32,7 +32,7 @@ const animateOut = async (gesture, setSpringTarget, windowHeight, windowWidth) =
   const finalRotation = dirX * 45
   const duration = diagonal / (speed * 1000)
   // フライアウトの最低アニメーション時間(ms)。大きいほどゆっくり飛ぶ
-  const minDuration = 450
+  const minDuration = 800
 
   setSpringTarget.start({
     xyrot: [finalX, finalY, finalRotation],

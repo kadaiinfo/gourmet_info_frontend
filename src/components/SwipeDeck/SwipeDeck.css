@@ -20,13 +20,13 @@
   pointer-events: none;
 }
 
-/* カードの表示領域。下部はスワイプ用ボタンのスペースを空ける */
+/* カードの表示領域。下部ボタンはカードの上に重ねて浮かせる */
 .swipe-deck-stack {
   position: fixed;
   top: 20px;
   left: 10px;
   right: 10px;
-  bottom: 110px;
+  bottom: 20px;
   margin: 0;
 }
 
@@ -103,6 +103,9 @@
   overflow: visible !important;
   z-index: auto !important;
   animation: none !important;
+  /* 下部ボタンがカードに重なるため、最後までスクロールした時に
+     コンテンツがボタンに隠れないよう余白を確保する */
+  padding-bottom: 50px !important;
 }
 
 /* お気に入り/閉じる未使用時の空ヘッダーは隠す */
@@ -110,53 +113,128 @@
   display: none !important;
 }
 
-/* 下部のスワイプ操作ボタン（スルー／保存） */
+/* ---- 保存/スルー時のカラーウォッシュ演出 ---- */
+/* カード全面を覆う半透明レイヤー。中央のアイコンがバネでポップする */
+.swipe-card-wash {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: swipe-wash-fade-in 0.18s ease-out both;
+}
+
+.swipe-card-wash--save {
+  background: radial-gradient(circle at 50% 45%, rgba(112, 82, 62, 0.72), rgba(112, 82, 62, 0.44));
+}
+
+.swipe-card-wash--skip {
+  background: radial-gradient(circle at 50% 45%, rgba(105, 105, 105, 0.6), rgba(105, 105, 105, 0.38));
+}
+
+.swipe-card-wash svg {
+  width: 72px;
+  height: 72px;
+  color: #fff;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+  /* back-out 系イージングで一瞬ふくらんでから収まる（バネ感） */
+  animation: swipe-wash-icon-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes swipe-wash-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes swipe-wash-icon-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 下部のスワイプ操作ボタン（スルー／保存）。丸アイコンボタンをカードに重ねて浮かせる */
 .swipe-deck-actions {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 32px;
+  bottom: 24px;
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 44px;
   z-index: 2100;
+  /* バー自体はカードに重なるため、ボタン以外の領域はタップを透過させる */
+  pointer-events: none;
 }
 
 .swipe-deck-btn {
-  min-width: 120px;
-  padding: 14px 24px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 999px;
-  font-size: 16px;
-  font-weight: 700;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: auto;
+}
+
+.swipe-deck-btn:active {
+  transform: scale(0.9);
+}
+
+.swipe-deck-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* スルー：グレー地に白× */
+.swipe-deck-btn--skip {
+  background: #ccc;
   color: #fff;
+}
+
+/* 保存：ブランド茶地に白ブックマーク（主役アクション） */
+.swipe-deck-btn--save {
+  background: #70523E;
+  color: #fff;
+}
+
+/* カード右上に重ねる終了ボタン（スワイプを終了してマップへ戻る）。
+   カードヘッダーの共有ボタン（.info__share-button）と同デザイン。
+   カード（.swipe-card）内に置くのでスワイプのフライアウトに追従する */
+.swipe-deck-quit {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 17px;
+  background-color: #ccc;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: "Noto Sans JP", sans-serif;
+  white-space: nowrap;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
-.swipe-deck-btn:active {
-  transform: scale(0.96);
-}
-
-.swipe-deck-btn--skip {
-  background: #9a9a9a;
-}
-
-.swipe-deck-btn--save {
-  background: #6f4e37;
-}
-
-/* スルーの左の「×」ボタン（スワイプを終了してマップへ戻る）。色はスルーと同じ */
-.swipe-deck-btn--quit {
-  min-width: 0;
-  width: 52px;
-  height: 52px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  line-height: 1;
-  background: #9a9a9a;
+.swipe-deck-quit svg {
+  flex-shrink: 0;
 }
 
