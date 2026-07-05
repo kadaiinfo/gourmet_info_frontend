@@ -255,36 +255,32 @@
 }
 
 
+/* スワイプUIの「終わる」ボタン（.swipe-deck-quit）と同デザインのピル型 */
 .info__close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #70523E;
-  padding: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 17px;
+  background-color: #ccc;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: "Noto Sans JP", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
 }
 
-@media (max-width: 768px) {
-  .info__detail .info__close {
-    font-size: 32px;
-    width: 32px;
-    height: 32px;
-    position: static;
-  }
+.info__close svg {
+  flex-shrink: 0;
 }
 
 .info__close:focus,
 .info__close:focus-visible {
   outline: none;
-}
-
-.info__close:hover {
-  color: #5c4332;
 }
 
 .info__body {
@@ -399,73 +395,42 @@
   font-family: "Noto Sans JP", sans-serif;
 }
 
-/* お気に入り（保存）ボタン：ヘッダー左側 */
-.info__favorite-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1.5px solid #70523E;
-  border-radius: 24px;
-  background: #fff;
-  color: #70523E;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: "Noto Sans JP", sans-serif;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.info__favorite-button svg {
-  flex-shrink: 0;
-}
-
-.info__favorite-button.is-active {
-  background: #70523E;
-  color: #fff;
-}
-
-@media (max-width: 768px) {
-  .info__favorite-button {
-    font-size: 11px;
-    padding: 6px 12px;
-    gap: 5px;
-  }
-}
-
-/* 共有ボタン：お気に入りボタンと同系の見た目 */
+/* お気に入り（保存）・共有ボタン：フィルタータグ（.genre-tag）とデザイン統一 */
+.info__favorite-button,
 .info__share-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
-  border: 1.5px solid #70523E;
-  border-radius: 24px;
-  background: #fff;
-  color: #70523E;
-  font-size: 13px;
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 17px;
+  background-color: #ccc;
+  color: white;
+  font-size: 11px;
   font-weight: 600;
   font-family: "Noto Sans JP", sans-serif;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
+  outline: none;
 }
 
+.info__favorite-button:focus,
+.info__favorite-button:focus-visible,
+.info__share-button:focus,
+.info__share-button:focus-visible {
+  outline: none;
+}
+
+.info__favorite-button svg,
 .info__share-button svg {
   flex-shrink: 0;
 }
 
-.info__share-button:hover {
-  background: #f5f0ec;
-}
-
-@media (max-width: 768px) {
-  .info__share-button {
-    font-size: 11px;
-    padding: 6px 12px;
-    gap: 5px;
-  }
+.info__favorite-button.is-active {
+  background-color: #70523E;
+  color: white;
 }
 
 /* cafe.caption */
@@ -521,6 +486,27 @@
 .info__copy-button:hover {
   background-color: #f0f0f0;
   color: #333;
+}
+
+/* コピー完了中：茶色のチェックマーク＋「コピーされました」でコピーされたことを明示 */
+.info__copy-button.is-copied,
+.info__copy-button.is-copied:hover {
+  color: #70523E;
+  background: none;
+  gap: 4px;
+}
+
+/* 文字サイズ・フォントは基本情報の値（.info__details dd）と揃える */
+.info__copy-feedback {
+  font-size: 14px;
+  font-family: "Noto Sans JP", sans-serif;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .info__copy-feedback {
+    font-size: 12px;
+  }
 }
 
 .info__copy-button svg {

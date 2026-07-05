@@ -284,7 +284,11 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
                     <ShareButton cafe={cafe} />
                     {onClose && (
                         <button className="info__close" onClick={handleClose} aria-label="閉じる">
-                            ×
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            閉じる
                         </button>
                     )}
                 </div>
@@ -500,11 +504,14 @@ const CopyButton = ({ text }: { text: string }) => {
     };
 
     return (
-        <button className="info__copy-button" onClick={handleCopy} aria-label="コピー">
+        <button className={`info__copy-button${copied ? " is-copied" : ""}`} onClick={handleCopy} aria-label={copied ? "コピーしました" : "コピー"}>
             {copied ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
+                <>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span className="info__copy-feedback">コピーされました</span>
+                </>
             ) : (
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
