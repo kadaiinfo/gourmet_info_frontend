@@ -47,12 +47,10 @@ export default function MapView({ onOpenSwipe }: MapViewProps) {
   // データ・フィルター
   const { allCafes, cafeDataLoaded } = useCafeData()
 
-  // お気に入り（Clerk認証 + D1保存）
+  // お気に入り（Clerk認証 + D1保存。未ログイン時は localStorage に一時保存）
   const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
-  const { isFavorite, toggleFavorite, removeFavorite, favoriteIds } = useFavorites({
-    onRequireSignIn: () => openSignIn(),
-  })
+  const { isFavorite, toggleFavorite, removeFavorite, favoriteIds } = useFavorites()
 
   // 検索バー横のブックマークボタン。
   // スマホ版（onOpenSwipe あり）はスワイプモードを開く。

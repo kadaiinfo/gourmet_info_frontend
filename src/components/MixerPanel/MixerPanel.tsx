@@ -88,6 +88,9 @@ export default function MixerPanel({ onClose, onShowCafeList, onShowFavoritesLis
       {/* お気に入りセクション（未ログイン時は空表示） */}
       <div className="mixer-panel__section">
           <h3 className="mixer-panel__section-title">お気に入りの飲食店</h3>
+          <SignedOut>
+            <p className="mixer-panel__favorites-note">ログインすると、お気に入りが消えずに保存されます</p>
+          </SignedOut>
           {favoriteCafes.length > 0 ? (
             <div className="mixer-panel__favorites-scroll">
               {favoriteCafes.map((cafe) => (

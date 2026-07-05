@@ -258,6 +258,14 @@
   gap: 12px;
 }
 
+/* 未ログイン時：お気に入りセクションの注記（ログインで永続保存される旨） */
+.mixer-panel__favorites-note {
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #888;
+}
+
 /* お気に入り（横スクロール） */
 .mixer-panel__favorites-scroll {
   display: flex;

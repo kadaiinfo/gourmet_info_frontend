@@ -2,22 +2,19 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAuth } from "@clerk/clerk-react"
 import { usePendingFavorites } from "./usePendingFavorites"
 
-interface UseFavoritesOptions {
-  // 未ログインで toggle した時に呼ばれる（サインインモーダル誘導用）
-  onRequireSignIn?: () => void
-}
-
 /**
  * お気に入り（D1保存）を管理するフック。
  * - ログイン時に /api/favorites から一覧をロード
  * - toggleFavorite は楽観的更新（即UI反映 → API → 失敗時ロールバック）
+ * - 未ログイン時の toggleFavorite は保留お気に入り(localStorage)への一時保存
+ *   （スワイプデッキの右スワイプと同じ挙動。ログイン後に D1 へ同期される）
  * - スワイプデッキで貯めた保留お気に入り(pendingIds)を、再マウントなしで
  *   表示に即反映 ＆ ログイン中なら D1 へ同期
  * - ログアウトで状態をクリア（キャッシュ漏洩防止）
  */
-export function useFavorites({ onRequireSignIn }: UseFavoritesOptions = {}) {
+export function useFavorites() {
   const { isSignedIn, getToken } = useAuth()
-  const { pendingIds, clear: clearPending, remove: removePending } = usePendingFavorites()
+  const { pendingIds, add: addPending, clear: clearPending, remove: removePending } = usePendingFavorites()
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set())
   const [loaded, setLoaded] = useState(false)
   const pendingRef = useRef<Set<string>>(new Set())
@@ -119,7 +116,12 @@ export function useFavorites({ onRequireSignIn }: UseFavoritesOptions = {}) {
   const toggleFavorite = useCallback(
     async (cafeId: string) => {
       if (!isSignedIn) {
-        onRequireSignIn?.()
+        // 未ログイン時は localStorage の保留お気に入りへ一時保存（スワイプと同じ挙動）
+        if (pendingIds.includes(cafeId)) {
+          removePending(cafeId)
+        } else {
+          addPending(cafeId)
+        }
         return
       }
       if (pendingRef.current.has(cafeId)) return // 二重送信ガード
@@ -156,7 +158,7 @@ export function useFavorites({ onRequireSignIn }: UseFavoritesOptions = {}) {
         pendingRef.current.delete(cafeId)
       }
     },
-    [isSignedIn, favoriteIds, authedFetch, onRequireSignIn]
+    [isSignedIn, favoriteIds, pendingIds, addPending, removePending, authedFetch]
   )
 
   // お気に入りから外す（一覧の解除ボタン用）。
