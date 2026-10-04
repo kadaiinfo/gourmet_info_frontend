@@ -40,7 +40,8 @@ npm run dev
 → http://localhost:5173 が開けば完了。
 
 店舗データは `src/data/cafe_data_kv.json`（ローカルのコピー）を読む。
-
+最新版は以下のURL（クラウドフレアKVからダウンロードしてくると良い）
+https://dash.cloudflare.com/0e20a53f098ab41bbbed802b3adabb8b/workers/kv/namespaces/51e44551ce024a58aa0cc2f84e419ccd
 
 # 構成
 
@@ -66,13 +67,6 @@ functions/              # Cloudflare Pages Functions
 └── sitemap.xml         # KVからサイトマップ生成
 ```
 
-| コマンド | 内容 |
-| --- | --- |
-| `npm run dev` | 開発サーバー |
-| `npm run build` | 型チェック + ビルド → `dist/` |
-| `npm run preview` | ビルド結果を確認 |
-| `npm run lint` | ESLint |
-| `npm run fetch-ogp` | おすすめ記事のOGP取得（→ `src/data/README.md`） |
 
 ---
 
