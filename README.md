@@ -73,5 +73,8 @@ functions/              # Cloudflare Pages Functions
 ### デプロイ
 
 `main` に push すると Cloudflare Pages へ自動で公開される
+```bash
+git push origin main
+```
 
-
+変更を本番環境に直接反映させるのが怖い時は、mainブランチ以外の別ブランチにpushするといい。
