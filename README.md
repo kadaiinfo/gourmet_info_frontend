@@ -18,6 +18,7 @@ npm install
 ### `.env.local` を置く
 
 エンジニア部のGoogle Driveにある `.env.local` をダウンロードしてプロジェクト直下に置く。
+https://drive.google.com/drive/folders/19i1kZcI1ssh93raR_hFTy5uQ_FTFSg2S
 
 ```
 gourmet_info_frontend/
