@@ -147,7 +147,7 @@ export default function ResumeCodeForm() {
       </button>
 
       <button className="resume-code__link" type="button" onClick={handleResend} disabled={cooldown > 0}>
-        {cooldown > 0 ? `コードを再送信（${cooldown}秒後に押せます）` : "コードが届かない場合は再送信"}
+        コードが届かない場合は再送信
       </button>
       <button className="resume-code__link" type="button" onClick={handleRestart}>
         別のメールアドレスで最初からやり直す

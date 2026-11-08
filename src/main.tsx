@@ -50,6 +50,17 @@ createRoot(document.getElementById('root')!).render(
           // タイトル(「KADAI INFOにサインイン」)は残し、
           // サブタイトル(「お帰りなさい！続行するにはサインインしてください」)のみ非表示
           headerSubtitle: { display: 'none' },
+          // 再送信ボタンは Clerk が文言の後ろに「 (30)」の待ち秒数を直接付けて表示する。
+          // 秒数は不要なので元の文字を隠し、同じ文言を秒数なしで表示する
+          // （待ち時間中にボタンが押せない挙動はそのまま）
+          formResendCodeLink: {
+            fontSize: 0,
+            '&::before': {
+              content: `"${RESEND_LABEL}"`,
+              fontSize: '12px',
+              lineHeight: '16px',
+            },
+          },
         },
       }}
     >
