@@ -69,17 +69,7 @@ export default defineConfig({
       }
     })
   ],
-  build: {
-    rollupOptions: {
-      output: {
-        // 巨大なライブラリを別チャンクに分け、並列ダウンロードとアプリ更新時のキャッシュ再利用を効かせる
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return
-          if (id.includes('maplibre-gl')) return 'maplibre'
-          if (id.includes('@clerk')) return 'clerk'
-          if (id.includes('/react-dom/') || id.includes('/react/') || id.includes('/scheduler/')) return 'react'
-        },
-      },
-    },
-  },
+  // 注意: manualChunks で react / @clerk を別チャンクに分けると、両チャンクが相互 import する
+  // 循環が生じ、本番で "Cannot set properties of undefined (setting 'Activity')" により起動不能になった。
+  // vendor の手動分割はしない（React.lazy による動的 import の分割のみ使う）。
 })
