@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { useAuth, useClerk } from "@clerk/clerk-react"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
@@ -6,9 +6,11 @@ import "./MapView.css"
 import { searchCafes, type Cafe } from "../../lib/dataClient"
 import Information from "../Information/Information.tsx"
 import Search from "../Search/Search.tsx"
-import MixerPanel from "../MixerPanel/MixerPanel.tsx"
-import CafeList from "../CafeList/CafeList.tsx"
-import NearbyCafeList from "../NearbyCafeList/NearbyCafeList.tsx"
+
+// 初期表示では開かないパネル類は別チャンクにして初回の JS 量を減らす
+const MixerPanel = lazy(() => import("../MixerPanel/MixerPanel.tsx"))
+const CafeList = lazy(() => import("../CafeList/CafeList.tsx"))
+const NearbyCafeList = lazy(() => import("../NearbyCafeList/NearbyCafeList.tsx"))
 
 import { handleCafeSelection } from "./utils/mapPosition"
 import { addMarkerForCafe } from "./utils/markerManager"
@@ -91,6 +93,22 @@ export default function MapView({ onOpenSwipe }: MapViewProps) {
     isKeyboardOpenRef,
     onBackgroundClick: () => setSelected(null),
   })
+
+  // 地図の初期描画が終わったら、遅延チャンクをアイドル時に先読み（初回クリック時の待ちを無くす）
+  useEffect(() => {
+    if (!mapLoaded) return
+    const preload = () => {
+      void import("../MixerPanel/MixerPanel.tsx")
+      void import("../CafeList/CafeList.tsx")
+      void import("../NearbyCafeList/NearbyCafeList.tsx")
+    }
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(preload, { timeout: 5000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = setTimeout(preload, 2000)
+    return () => clearTimeout(id)
+  }, [mapLoaded])
 
   // マーカー同期
   const { markersRef } = useMarkerSync({
@@ -240,59 +258,61 @@ export default function MapView({ onOpenSwipe }: MapViewProps) {
         />
       )}
 
-      {showMixerPanel && (
-        <MixerPanel
-          onClose={() => setShowMixerPanel(false)}
-          onShowCafeList={() => {
-            setShowMixerPanel(false)
-            setShowCafeList(true)
-          }}
-          onShowFavoritesList={() => {
-            setShowMixerPanel(false)
-            // 未ログインでもそのままお気に入り一覧を表示する
-            setShowFavorites(true)
-          }}
-          onAreaSelect={handleAreaSelect}
-          onShowNearbyCafes={() => {
-            setShowMixerPanel(false)
-            setShowNearbyCafeList(true)
-          }}
-          genres={GENRES}
-          selectedGenre={selectedGenre}
-          onGenreSelect={toggleGenre}
-          favoriteCafes={favoriteCafes}
-          onFavoriteSelect={(cafe) => {
-            setShowMixerPanel(false)
-            handleCafeSelect(cafe)
-          }}
-        />
-      )}
+      <Suspense fallback={null}>
+        {showMixerPanel && (
+          <MixerPanel
+            onClose={() => setShowMixerPanel(false)}
+            onShowCafeList={() => {
+              setShowMixerPanel(false)
+              setShowCafeList(true)
+            }}
+            onShowFavoritesList={() => {
+              setShowMixerPanel(false)
+              // 未ログインでもそのままお気に入り一覧を表示する
+              setShowFavorites(true)
+            }}
+            onAreaSelect={handleAreaSelect}
+            onShowNearbyCafes={() => {
+              setShowMixerPanel(false)
+              setShowNearbyCafeList(true)
+            }}
+            genres={GENRES}
+            selectedGenre={selectedGenre}
+            onGenreSelect={toggleGenre}
+            favoriteCafes={favoriteCafes}
+            onFavoriteSelect={(cafe) => {
+              setShowMixerPanel(false)
+              handleCafeSelect(cafe)
+            }}
+          />
+        )}
 
-      {showCafeList && (
-        <CafeList
-          onCafeSelect={handleCafeSelect}
-          onClose={() => setShowCafeList(false)}
-          cafes={filterOpenNow ? filteredCafes : undefined}
-        />
-      )}
+        {showCafeList && (
+          <CafeList
+            onCafeSelect={handleCafeSelect}
+            onClose={() => setShowCafeList(false)}
+            cafes={filterOpenNow ? filteredCafes : undefined}
+          />
+        )}
 
-      {showNearbyCafeList && (
-        <NearbyCafeList
-          onCafeSelect={handleCafeSelect}
-          onClose={() => setShowNearbyCafeList(false)}
-          cafes={filterOpenNow ? filteredCafes : undefined}
-        />
-      )}
+        {showNearbyCafeList && (
+          <NearbyCafeList
+            onCafeSelect={handleCafeSelect}
+            onClose={() => setShowNearbyCafeList(false)}
+            cafes={filterOpenNow ? filteredCafes : undefined}
+          />
+        )}
 
-      {showFavorites && (
-        <CafeList
-          onCafeSelect={handleCafeSelect}
-          onClose={() => setShowFavorites(false)}
-          cafes={favoriteCafes}
-          countNoun="お気に入りの飲食店"
-          onRemoveFavorite={removeFavorite}
-        />
-      )}
+        {showFavorites && (
+          <CafeList
+            onCafeSelect={handleCafeSelect}
+            onClose={() => setShowFavorites(false)}
+            cafes={favoriteCafes}
+            countNoun="お気に入りの飲食店"
+            onRemoveFavorite={removeFavorite}
+          />
+        )}
+      </Suspense>
     </div>
   )
 }

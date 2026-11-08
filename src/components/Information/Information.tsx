@@ -257,7 +257,7 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
         <aside className={`info ${isExpanded ? 'info--expanded' : 'info--collapsed'} ${isClosing ? 'info--closing' : ''}`}>
             {/* スマホ版:下部に固定表示される簡易情報 */}
             <div className="info__preview" onClick={handleToggle}>
-                {!hasBeenExpanded && <img src="/tap.png" className="info__preview-tap" alt="tap" />}
+                {!hasBeenExpanded && <img src="/tap.png" className="info__preview-tap" alt="tap" width={782} height={1095} />}
                 <div className="info__preview-content">
                     <h3 className="info__preview-title">{cafe.store_name ?? "—"}</h3>
                     <p className="info__preview-address">{cafe.address ?? "—"}</p>
@@ -298,7 +298,7 @@ export default function Information({ cafe, onClose, expandTrigger = 0, isFavori
                     {permalink && !embedFailed ? (
                         <div
                             key={permalink}
-                            className="info__instagram-embed"
+                            className={`info__instagram-embed${isEmbedLoaded ? "" : " info__instagram-embed--loading"}`}
                             ref={embedContainerRef}
                         >
                             {!isEmbedLoaded && (

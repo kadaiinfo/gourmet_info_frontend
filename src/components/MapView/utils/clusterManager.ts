@@ -124,6 +124,8 @@ type ClusterCtx = {
 }
 const clusterContexts = new WeakMap<maplibregl.Map, ClusterCtx>()
 const clusterHandlersRegistered = new WeakSet<maplibregl.Map>()
+// 直近にクラスターを描画した入力（同じなら再計算しない）
+const lastClusterInput = new WeakMap<maplibregl.Map, { cafes: Cafe[]; distance: number }>()
 
 const ensureClusterHandlers = (map: maplibregl.Map) => {
   if (clusterHandlersRegistered.has(map)) return
@@ -179,6 +181,20 @@ export const updateClusterMarkers = (
 
   // ズームレベルが閾値以下の場合はクラスターレイヤーを表示
   if (zoom <= ZOOM_THRESHOLD) {
+    // クラスター結果は「店舗配列」と「クラスター距離」だけで決まる。
+    // パンのたびに再計算・setData しないよう、どちらも変わっていなければスキップ。
+    const clusterDistance = getClusterDistance(zoom)
+    const last = lastClusterInput.get(map)
+    if (
+      map.getSource('clusters') &&
+      last &&
+      last.cafes === allCafes &&
+      last.distance === clusterDistance
+    ) {
+      return
+    }
+    lastClusterInput.set(map, { cafes: allCafes, distance: clusterDistance })
+
     const clusters = createCafeClusters(allCafes, zoom)
 
     const geojsonData = {
@@ -189,10 +205,11 @@ export const updateClusterMarkers = (
           type: 'Point' as const,
           coordinates: [cluster.lng, cluster.lat]
         },
+        // 店舗配列は properties に載せない（setData のたびに Worker へ全店舗をシリアライズ
+        // することになり重い）。クリック時は id から createCafeClusters で引き直す。
         properties: {
           id: cluster.id,
-          count: cluster.count,
-          cafes: cluster.cafes
+          count: cluster.count
         }
       }))
     }

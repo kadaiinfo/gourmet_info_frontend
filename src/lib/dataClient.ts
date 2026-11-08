@@ -83,11 +83,24 @@ const isDevelopment = import.meta.env.MODE === 'development'
 const isCacheFresh = () =>
     apiDataCache !== null && Date.now() - apiDataCacheTime < CACHE_TTL_MS
 
-// APIからカフェデータを取得（開発環境ではローカルデータを使用）
-const fetchCafeDataFromAPI = async (): Promise<CafeDataFromAPI[]> => {
+// 取得中のリクエスト（App と MapView など複数箇所から同時に呼ばれても1回の fetch にまとめる）
+let inflightRequest: Promise<CafeDataFromAPI[]> | null = null
+
+// APIからカフェデータを取得（同時呼び出しは1つのリクエストに集約）
+const fetchCafeDataFromAPI = (): Promise<CafeDataFromAPI[]> => {
     if (isCacheFresh()) {
-        return apiDataCache!
+        return Promise.resolve(apiDataCache!)
     }
+    if (!inflightRequest) {
+        inflightRequest = fetchCafeDataUncached().finally(() => {
+            inflightRequest = null
+        })
+    }
+    return inflightRequest
+}
+
+// 実際の取得処理（開発環境ではローカルデータを使用）
+const fetchCafeDataUncached = async (): Promise<CafeDataFromAPI[]> => {
 
     // 開発環境ではローカルデータを使用
     if (isDevelopment) {

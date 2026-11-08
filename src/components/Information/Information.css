@@ -44,6 +44,8 @@
   top: -50px;
   right: 5px;
   width: 50px;
+  /* img の width/height 属性は縦横比の確保用。表示サイズは幅50pxに合わせる */
+  height: auto;
   pointer-events: none;
   z-index: 1001;
 }
@@ -519,15 +521,30 @@
 }
 
 /* Instagram埋め込みのローディング */
-.info__embed-loading {
+/* 読み込み中の表示は埋め込みの「上に重ねる」（通常フローに置かない）。
+   フローに置くと、裏で生成済みの Instagram iframe がプレースホルダの下に並び、
+   読み込み完了でプレースホルダが消えた瞬間に iframe が 480px 上へ跳ねて
+   大きなレイアウトシフト（CLS）になるため。 */
+.info__instagram-embed {
   position: relative;
+}
+
+.info__instagram-embed--loading {
+  min-height: 480px;
+}
+
+.info__embed-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 480px;
+  height: 480px;
   background-color: #ffffff;
   border-radius: 3px;
-  margin-bottom: 16px;
   overflow: hidden;
 }
 

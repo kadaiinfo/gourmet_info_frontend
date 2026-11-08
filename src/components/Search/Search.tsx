@@ -131,8 +131,8 @@ export default function Search({
   return (
     <div className="search-container" ref={searchRef}>
       <div className="search-logo-container">
-        <img src="/logo.svg" alt="Logo" className="search-logo" />
-        <img src="/logo_brown.svg" alt="Logo Brown" className="search-logo-brown" />
+        <img src="/logo.svg" alt="Logo" className="search-logo" width={187} height={34} />
+        <img src="/logo_brown.svg" alt="Logo Brown" className="search-logo-brown" width={217} height={28} />
       </div>
       <form onSubmit={handleSubmit} className="search-form">
         <div className="search-input-container">
@@ -222,7 +222,7 @@ export default function Search({
             </button>
           ))}
           {(!selectedGenre || selectedGenre.length === 0) && !isOpenNowActive && (
-            <img src="/filter.png" className="filter-icon" alt="Filter" />
+            <img src="/filter.png" className="filter-icon" alt="Filter" width={1532} height={555} />
           )}
         </div>
       )}

@@ -114,12 +114,16 @@ export default function SwipeDeck({ cafes, active, onLike, onFinish }: SwipeDeck
     }
   }, [index, deck, cafes, onFinish])
 
+  // 非表示（先読み）中は一枚目だけマウントして、ボタンで開いた瞬間のローディングを消す。
+  // 奥のカードの Instagram 埋め込みまで裏で読むと、地図操作中の帯域・CPUを圧迫するため。
+  const mountedCount = active ? MOUNTED_COUNT : 1
+
   return (
     <div className={`swipe-deck-overlay${active ? "" : " swipe-deck-overlay--hidden"}`}>
       <div className="swipe-deck-stack">
         {deck
           .map((cafe, i) => ({ cafe, i }))
-          .filter(({ i }) => i >= index && i < index + MOUNTED_COUNT)
+          .filter(({ i }) => i >= index && i < index + mountedCount)
           .reverse()
           .map(({ cafe, i }) => (
             <SwipeCard
