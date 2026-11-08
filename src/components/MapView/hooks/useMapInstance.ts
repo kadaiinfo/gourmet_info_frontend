@@ -45,6 +45,14 @@ export const useMapInstance = ({
 
     map.on("load", () => setMapLoaded(true))
 
+    // 外部スタイル(osm-bright-ja)の sprite に無い POI アイコン（office_11 等）を
+    // 要求されたら透明な 1x1 画像で埋める。見た目は変わらず、コンソール警告だけ止まる。
+    const handleStyleImageMissing = (e: { id: string }) => {
+      if (map.hasImage(e.id)) return
+      map.addImage(e.id, { width: 1, height: 1, data: new Uint8Array(4) })
+    }
+    map.on("styleimagemissing", handleStyleImageMissing)
+
     const handleMoveEnd = () => {
       const z = map.getZoom()
       const c = map.getCenter()
@@ -97,6 +105,7 @@ export const useMapInstance = ({
       map.off("moveend", handleMoveEnd)
       map.off("zoomend", handleZoomEnd)
       map.off("click", handleClick)
+      map.off("styleimagemissing", handleStyleImageMissing)
       map.remove()
       mapRef.current = null
     }
