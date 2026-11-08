@@ -3,6 +3,10 @@ import MapView from './components/MapView/MapView.tsx'
 import { useCafeData } from './components/MapView/hooks/useCafeData.ts'
 import { usePendingFavorites } from './hooks/usePendingFavorites.ts'
 import { useIsMobile } from './hooks/useIsMobile.ts'
+import AuthPage from './components/AuthPage/AuthPage.tsx'
+import { useResumePendingAuth } from './hooks/useResumePendingAuth.ts'
+import { isAuthPath } from './lib/authRoute.ts'
+import { useLocationPath } from './lib/navigation.ts'
 
 // スワイプデッキ（react-spring 含む）は初期表示に不要なので別チャンクで遅延読み込み
 const SwipeDeck = lazy(() => import('./components/SwipeDeck/SwipeDeck.tsx'))
@@ -19,6 +23,11 @@ function App() {
 
   const { allCafes, cafeDataLoaded } = useCafeData()
   const { add: addPending } = usePendingFavorites()
+
+  // ログイン/アカウント作成ページ（/sign-in, /sign-up）。地図は裏でマウントしたまま
+  const pathname = useLocationPath()
+  // メールアプリへの切り替え等でアプリが再起動しても、コード入力画面へ戻す
+  const authReady = useResumePendingAuth()
 
   // 非表示デッキのマウント許可。ブラウザがアイドルになってから先読みを始める
   // （Instagram 埋め込みが地図の初期描画と帯域・CPUを奪い合わないように）
@@ -56,6 +65,8 @@ function App() {
           />
         </Suspense>
       )}
+
+      {isAuthPath(pathname) && <AuthPage pathname={pathname} ready={authReady} />}
     </div>
   )
 }

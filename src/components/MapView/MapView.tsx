@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react"
-import { useAuth, useClerk } from "@clerk/clerk-react"
+import { useAuth } from "@clerk/clerk-react"
+import { openAuthPage } from "../../lib/authRoute"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import "./MapView.css"
@@ -50,7 +51,6 @@ export default function MapView({ onOpenSwipe }: MapViewProps) {
   const { allCafes, cafeDataLoaded } = useCafeData()
 
   // お気に入り（Clerk認証 + D1保存。未ログイン時は localStorage に一時保存）
-  const { openSignIn } = useClerk()
   const { isSignedIn } = useAuth()
   const { isFavorite, toggleFavorite, removeFavorite, favoriteIds } = useFavorites()
 
@@ -65,7 +65,7 @@ export default function MapView({ onOpenSwipe }: MapViewProps) {
     if (isSignedIn) {
       setShowFavorites(true)
     } else {
-      openSignIn()
+      openAuthPage()
     }
   }
   const favoriteCafes = useMemo(

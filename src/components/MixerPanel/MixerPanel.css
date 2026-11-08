@@ -545,3 +545,30 @@
     font-size: 11px;
   }
 }
+/* ログアウトの確認（ワンタップでログアウトさせない） */
+.mixer-panel__signout-confirm {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1.5px solid #e5dfd3;
+  border-radius: 10px;
+  background: #faf8f3;
+}
+
+.mixer-panel__signout-confirm-text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.mixer-panel__signout-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mixer-panel__genre-button.mixer-panel__signout-confirm-ok {
+  border-color: #70523E;
+  background-color: #70523E;
+  color: #fff;
+}

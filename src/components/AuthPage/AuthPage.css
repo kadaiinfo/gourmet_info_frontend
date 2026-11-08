@@ -1,0 +1,162 @@
+/* ログイン/アカウント作成ページ（地図の上に全面表示） */
+.auth-page {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #f0ede4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 16px 32px;
+  box-sizing: border-box;
+}
+
+.auth-page__content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-page__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1.5px solid #ccc;
+  border-radius: 18px;
+  background: #fff;
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: "Noto Sans JP", sans-serif;
+  cursor: pointer;
+}
+
+/* 起動判定中（コード入力の再開可否を確認中） */
+.auth-page__loading {
+  margin-top: 80px;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5dfd3;
+  border-top-color: #70523E;
+  border-radius: 50%;
+  animation: auth-page-spin 1s linear infinite;
+}
+
+@keyframes auth-page-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 再読み込み後のコード入力（自前フォーム。Clerk のカードに見た目を寄せる） */
+.resume-code {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 24px;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08), 0 15px 35px -5px rgba(25, 28, 33, 0.2);
+  font-family: "Noto Sans JP", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resume-code__title {
+  margin: 0;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #212126;
+}
+
+.resume-code__text {
+  margin: 0 0 4px;
+  text-align: center;
+  font-size: 13px;
+  color: #747686;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.resume-code__text strong {
+  color: #212126;
+}
+
+.resume-code__input {
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid #d9d9de;
+  border-radius: 10px;
+  font-size: 22px;
+  letter-spacing: 0.3em;
+  text-align: center;
+  font-family: inherit;
+}
+
+.resume-code__input:focus {
+  outline: none;
+  border-color: #70523E;
+  box-shadow: 0 0 0 3px rgba(112, 82, 62, 0.15);
+}
+
+.resume-code__error,
+.resume-code__info {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.resume-code__error {
+  color: #d32f2f;
+}
+
+.resume-code__info {
+  color: #2e7d32;
+}
+
+.resume-code__submit {
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: #70523E;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.resume-code__submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.resume-code__link {
+  border: none;
+  background: none;
+  color: #70523E;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.resume-code__link:disabled {
+  color: #9a9aa3;
+  cursor: default;
+}
+
+/* 入力値は字間を広げて読みやすく、プレースホルダーは通常の字間にする */
+.resume-code__input::placeholder {
+  font-size: 15px;
+  letter-spacing: normal;
+  color: #9a9aa3;
+}

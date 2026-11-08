@@ -1,5 +1,7 @@
-import { SignedIn, SignedOut, SignInButton, SignOutButton, UserButton, useUser } from "@clerk/clerk-react"
+import { useState } from "react"
+import { SignedIn, SignedOut, SignOutButton, UserButton, useUser } from "@clerk/clerk-react"
 import "./MixerPanel.css"
+import { openAuthPage } from "../../lib/authRoute"
 import { type Cafe } from "../../lib/dataClient"
 import { type GenreId } from "../../utils/genreFilter"
 
@@ -18,6 +20,8 @@ interface MixerPanelProps {
 
 export default function MixerPanel({ onClose, onShowCafeList, onShowFavoritesList, onAreaSelect, onShowNearbyCafes, genres, selectedGenre, onGenreSelect, favoriteCafes = [], onFavoriteSelect }: MixerPanelProps) {
   const { user } = useUser()
+  // ログアウトはワンタップで実行せず、確認を挟む
+  const [confirmingSignOut, setConfirmingSignOut] = useState(false)
 
   const areas = [
     { id: "uptown", name: "騎射場", lng: 130.5520733, lat: 31.5692252 },
@@ -51,11 +55,10 @@ export default function MixerPanel({ onClose, onShowCafeList, onShowFavoritesLis
         <SignedOut>
           <div className="mixer-panel__account">
             <div className="mixer-panel__avatar-placeholder" />
-            <SignInButton mode="modal">
-              <button className="mixer-panel__genre-button" type="button">
-                ログイン
-              </button>
-            </SignInButton>
+            {/* モーダルではなく専用ページで開く（アプリ切り替え後も手続きを続けられるように） */}
+            <button className="mixer-panel__genre-button" type="button" onClick={() => openAuthPage()}>
+              ログイン
+            </button>
           </div>
         </SignedOut>
         <SignedIn>
@@ -76,12 +79,35 @@ export default function MixerPanel({ onClose, onShowCafeList, onShowFavoritesLis
                 {user?.fullName ?? user?.username}
               </span>
             </div>
-            <SignOutButton>
-              <button className="mixer-panel__genre-button mixer-panel__account-action" type="button">
+            {!confirmingSignOut && (
+              <button
+                className="mixer-panel__genre-button mixer-panel__account-action"
+                type="button"
+                onClick={() => setConfirmingSignOut(true)}
+              >
                 ログアウト
               </button>
-            </SignOutButton>
+            )}
           </div>
+          {confirmingSignOut && (
+            <div className="mixer-panel__signout-confirm" role="alertdialog" aria-label="ログアウトの確認">
+              <p className="mixer-panel__signout-confirm-text">ログアウトしますか？</p>
+              <div className="mixer-panel__signout-confirm-actions">
+                <button
+                  className="mixer-panel__genre-button"
+                  type="button"
+                  onClick={() => setConfirmingSignOut(false)}
+                >
+                  キャンセル
+                </button>
+                <SignOutButton>
+                  <button className="mixer-panel__genre-button mixer-panel__signout-confirm-ok" type="button">
+                    ログアウトする
+                  </button>
+                </SignOutButton>
+              </div>
+            </div>
+          )}
         </SignedIn>
       </div>
 
